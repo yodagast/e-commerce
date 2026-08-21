@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERP 管理后台</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div id="admin-login" class="container" style="max-width:420px;margin-top:80px">
+    <div class="card">
+      <h3 style="margin-bottom:16px">ERP 管理后台</h3>
+      <div class="form-group"><label>用户名</label><input type="text" id="admin-user" value="admin"></div>
+      <div class="form-group"><label>密码</label><input type="password" id="admin-pass" value="admin123"></div>
+      <button class="btn btn-primary" style="width:100%" id="admin-login-btn">登录</button>
+    </div>
+  </div>
+
+  <div id="admin-app" class="admin-layout hidden">
+    <aside class="admin-sidebar">
+      <div class="logo">🐍 ERP</div>
+      <a href="javascript:void(0)" data-view="dashboard" class="active">仪表盘</a>
+      <a href="javascript:void(0)" data-view="products">商品管理</a>
+      <a href="javascript:void(0)" data-view="orders">订单管理</a>
+      <a href="javascript:void(0)" id="admin-logout">退出登录</a>
+    </aside>
+    <main class="admin-main">
+      <div id="view-dashboard">
+        <div class="stat-grid" id="stats"></div>
+        <div id="low-stock"></div>
+      </div>
+      <div id="view-products" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2>商品管理</h2>
+          <button class="btn btn-primary" id="add-product-btn">新增商品</button>
+        </div>
+        <div id="product-table"></div>
+      </div>
+      <div id="view-orders" class="hidden">
+        <h2 style="margin-bottom:16px">订单管理</h2>
+        <div id="order-table"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/js/common.js"></script>
+  <script>
+    (function () {
+      var App = window.App;
+      var t = App.t;
+      var adminToken = null;
+
+      function api(path, opts) {
+        opts = opts || {};
+        if (!adminToken) adminToken = App.getAdminToken();
+        return App.api(path, Object.assign({}, opts, { token: adminToken, includeLang: false }));
+      }
+
+      function shoeLogin() {
+        document.getElementById('admin-login').classList.remove('hidden');
+        document.getElementById('admin-app').classList.add('hidden');
+      }
+      function showApp() {
+        document.getElementById('admin-login').classList.add('hidden');
+        document.getElementById('admin-app').classList.remove('hidden');
+      }
+
+      function login() {
+        var u = document.getElementById('admin-user').value.trim();
+        var p = document.getElementById('admin-pass').value;
+        api('/api/admin/login', { method: 'POST', body: { username: u, password: p } })
+          .then(function (d) {
+            adminToken = d.access_token;
+            App.setAdminToken(d.access_token);
+            showApp();
+            loadDashboard();
+            loadProducts();
+            loadOrders();
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function loadDashboard() {
+        api('/api/admin/dashboard')
+          .then(function (d) {
+            document.getElementById('stats').innerHTML =
+              '<div class="stat-card"><div class="stat-value">' + d.products_count + '</div><div class="stat-label">' + t('products_count') + '</div></div>'
+              + '<div class="stat-card"><div class="stat-value">' + d.orders_count + '</div><div class="stat-label">' + t('orders_count') + '</div></div>'
+              + '<div class="stat-card"><div class="stat-value">' + d.customers_count + '</div><div class="stat-label">' + t('customers_count') + '</div></div>'
+              + '<div class="stat-card"><div class="stat-value">' + App.money(d.revenue) + '</div><div class="stat-label">' + t('revenue') + '</div></div>'
+              + '<div class="stat-card"><div class="stat-value">' + d.pending_orders + '</div><div class="stat-label">' + t('pending_orders') + '</div></div>'
+              + '<div class="stat-card"><div class="stat-value">' + d.low_stock + '</div><div class="stat-label">' + t('low_stock') + '</div></div>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function loadProducts() {
+        api('/api/admin/products')
+          .then(function (list) {
+            var rows = list.map(function (p) {
+              var skus = (p.skus || []).map(function (s) {
+                return '<tr><td>' + s.sku_code + '</td><td>' + App.money(s.price) + '</td>'
+                  + '<td><input type="number" value="' + s.stock + '" onchange="Admin.stock(' + s.id + ',this.value)" style="width:80px"></td>'
+                  + '<td>' + (s.available_stock) + '</td></tr>';
+              }).join('');
+              return '<tr><td>' + p.id + '</td><td>' + (p.name_i18n.zh || p.sku_code) + '</td><td>' + App.money(p.base_price) + '</td>'
+                + '<td>' + p.status + '</td><td><table class="admin-table" style="margin:0">' + skus + '</table></td></tr>';
+            }).join('');
+            document.getElementById('product-table').innerHTML =
+              '<table class="admin-table"><thead><tr><th>ID</th><th>名称</th><th>基础价</th><th>状态</th><th>SKU</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="5">暂无</td></tr>') + '</tbody></table>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function loadOrders() {
+        api('/api/admin/orders')
+          .then(function (list) {
+            var rows = list.map(function (o) {
+              var shipBtn = o.status === 'paid'
+                ? '<button class="btn btn-primary btn-sm" onclick="Admin.ship(\'' + o.order_no + '\')">发货</button>' : '';
+              return '<tr><td>' + o.order_no + '</td><td>' + o.receiver_name + '</td>'
+                + '<td>' + App.money(o.total_amount) + '</td><td>' + App.badge(o.status) + '</td>'
+                + '<td>' + o.created_at + '</td><td>' + shipBtn + '</td></tr>';
+            }).join('');
+            document.getElementById('order-table').innerHTML =
+              '<table class="admin-table"><thead><tr><th>订单号</th><th>收货人</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="6">暂无订单</td></tr>') + '</tbody></table>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function addProduct() {
+        var name = prompt('商品名称(中文)');
+        if (!name) return;
+        var price = prompt('基础价格');
+        if (!price) return;
+        var skuCode = prompt('SKU 编码');
+        if (!skuCode) return;
+        var stock = prompt('初始库存', '100');
+        api('/api/admin/products', {
+          method: 'POST',
+          body: {
+            sku_code: skuCode,
+            name_i18n: { zh: name, en: '' },
+            description_i18n: { zh: '', en: '' },
+            base_price: Number(price),
+            skus: [{ sku_code: skuCode, price: Number(price), stock: Number(stock || 0), attributes: {} }],
+          }
+        }).then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function stock(skuId, val) {
+        api('/api/admin/skus/' + skuId + '/stock', { method: 'PUT', body: { stock: Number(val), reason: 'admin_adjust' } })
+          .then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function ship(orderNo) {
+        api('/api/admin/orders/' + orderNo + '/ship', { method: 'POST' })
+          .then(function () { App.toast(t('operation_success'), 'success'); loadOrders(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function switchView(v) {
+        document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('data-view') === v);
+        });
+        document.getElementById('view-dashboard').classList.toggle('hidden', v !== 'dashboard');
+        document.getElementById('view-products').classList.toggle('hidden', v !== 'products');
+        document.getElementById('view-orders').classList.toggle('hidden', v !== 'orders');
+      }
+
+      window.Admin = { stock: stock, ship: ship };
+
+      document.getElementById('admin-login-btn').onclick = login;
+      document.getElementById('add-product-btn').onclick = addProduct;
+      document.getElementById('admin-logout').onclick = function () {
+        App.clearAdminToken(); adminToken = null; shoeLogin();
+      };
+      document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
+        a.onclick = function () { switchView(a.getAttribute('data-view')); };
+      });
+
+      (function init() {
+        if (App.getAdminToken()) {
+          adminToken = App.getAdminToken();
+          showApp();
+          loadDashboard(); loadProducts(); loadOrders();
+        } else {
+          shoeLogin();
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>

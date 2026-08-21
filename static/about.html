@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我们 - PyMall</title>
+  <link rel="stylesheet" href="/static/css/jjshouse.css">
+  <style>
+    /* ---------- About Us 品牌故事页样式 ---------- */
+    .about-hero {
+      position: relative;
+      background: linear-gradient(135deg, var(--jjs-primary) 0%, #8e1240 100%);
+      color: #fff;
+      padding: 88px 20px 96px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .about-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 25%, rgba(255,255,255,0.12) 0%, transparent 38%),
+        radial-gradient(circle at 85% 70%, rgba(245,208,32,0.14) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .about-hero-inner {
+      position: relative;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .about-hero .hero-tag {
+      display: inline-block;
+      letter-spacing: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      margin-bottom: 26px;
+      text-transform: uppercase;
+    }
+    .about-hero h1 {
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    .about-hero p.sub {
+      font-size: clamp(14px, 1.6vw, 17px);
+      line-height: 1.9;
+      opacity: 0.92;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* 品牌故事 */
+    .story-section {
+      padding: 72px 0 56px;
+    }
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: center;
+    }
+    .story-grid .kicker {
+      color: var(--jjs-primary);
+      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .story-grid h2 {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+    .story-grid .story-p {
+      color: var(--jjs-gray);
+      line-height: 2;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+    .story-visual {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .story-visual img {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+    }
+    .story-visual .sv-tag {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      background: rgba(255,255,255,0.92);
+      color: var(--jjs-primary);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 2px;
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+
+    /* 使命 */
+    .mission-band {
+      background: var(--jjs-bg-light);
+      padding: 64px 0;
+    }
+    .mission-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .mission-inner .kicker {
+      color: var(--jjs-primary);
+      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .mission-inner h2 {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .mission-inner .mission-desc {
+      color: var(--jjs-gray);
+      font-size: 15px;
+      line-height: 2;
+      margin-bottom: 30px;
+    }
+    .mission-points {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .mission-point {
+      background: #fff;
+      border: 1px solid var(--jjs-border);
+      border-radius: var(--radius-md);
+      padding: 16px 26px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .mission-point .mp-ic {
+      margin-right: 8px;
+    }
+
+    /* 探索板块（仿 POP MART Discover） */
+    .discover-section {
+      padding: 72px 0 56px;
+    }
+    .discover-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .discover-header .kicker {
+      color: var(--jjs-primary);
+      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .discover-header h2 {
+      font-size: 30px;
+      font-weight: 800;
+    }
+    .discover-header .discover-desc {
+      color: var(--jjs-gray);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .discover-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .discover-card {
+      border: 1px solid var(--jjs-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #fff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .discover-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+    .discover-card .dc-img {
+      height: 210px;
+      overflow: hidden;
+    }
+    .discover-card .dc-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .discover-card:hover .dc-img img {
+      transform: scale(1.06);
+    }
+    .discover-card .dc-body {
+      padding: 22px 22px 26px;
+    }
+    .discover-card .dc-title {
+      font-weight: 800;
+      font-size: 17px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .discover-card .dc-desc {
+      color: var(--jjs-gray);
+      font-size: 13.5px;
+      line-height: 1.8;
+    }
+    .discover-card .dc-link {
+      display: inline-block;
+      margin-top: 14px;
+      color: var(--jjs-primary);
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid transparent;
+    }
+    .discover-card .dc-link:hover {
+      border-bottom-color: var(--jjs-primary);
+    }
+
+    /* 成长历程时间线 */
+    .milestones {
+      background: var(--jjs-dark);
+      color: #fff;
+      padding: 72px 0 64px;
+    }
+    .milestones-header {
+      text-align: center;
+      margin-bottom: 46px;
+    }
+    .milestones-header .kicker {
+      color: var(--jjs-accent);
+      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .milestones-header h2 {
+      font-size: 30px;
+      font-weight: 800;
+    }
+    .milestones-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+    .milestone-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-lg);
+      padding: 26px 22px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .milestone-card:hover {
+      transform: translateY(-5px);
+    }
+    .milestone-card .ml-time {
+      color: var(--jjs-accent);
+      font-weight: 800;
+      font-size: 22px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .milestone-card .ml-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    .milestone-card .ml-desc {
+      color: rgba(255,255,255,0.68);
+      font-size: 12.5px;
+      line-height: 1.8;
+    }
+
+    /* 价值观 */
+    .values-section {
+      padding: 72px 0 64px;
+    }
+    .values-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .values-header .kicker {
+      color: var(--jjs-primary);
+      letter-spacing: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .values-header h2 {
+      font-size: 30px;
+      font-weight: 800;
+    }
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .value-card {
+      text-align: center;
+      padding: 34px 24px;
+      border-radius: var(--radius-lg);
+      background: var(--jjs-bg-light);
+      border: 1px solid var(--jjs-border);
+    }
+    .value-card .v-ic {
+      font-size: 34px;
+      margin-bottom: 14px;
+    }
+    .value-card .v-title {
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .value-card .v-desc {
+      color: var(--jjs-gray);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* 社区订阅（仿 POP MART JOIN THE COMMUNITY） */
+    .join-band {
+      position: relative;
+      background: linear-gradient(120deg, var(--jjs-primary) 0%, #a0144a 100%);
+      color: #fff;
+      padding: 64px 20px;
+      text-align: center;
+    }
+    .join-band h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .join-band p {
+      opacity: 0.9;
+      margin-bottom: 26px;
+      font-size: 14px;
+    }
+    .join-form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .join-form input {
+      flex: 1;
+      padding: 13px 18px;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .join-form button {
+      background: var(--jjs-dark);
+      color: #fff;
+      padding: 13px 30px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    .join-form button:hover {
+      opacity: 0.85;
+    }
+
+    @media (max-width: 900px) {
+      .story-grid { grid-template-columns: 1fr; gap: 28px; }
+      .discover-grid { grid-template-columns: 1fr; }
+      .milestones-grid { grid-template-columns: repeat(2, 1fr); }
+      .values-grid { grid-template-columns: 1fr; }
+      .join-form { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <top-bar></top-bar>
+    <main-nav active="about"></main-nav>
+
+    <!-- Hero：品牌口号 -->
+    <section class="about-hero">
+      <div class="about-hero-inner">
+        <span class="hero-tag">{{ t('about_hero_tag') }}</span>
+        <h1>{{ t('about_hero_title') }}</h1>
+        <p class="sub">{{ t('about_hero_sub') }}</p>
+      </div>
+    </section>
+
+    <!-- 品牌故事 -->
+    <section class="story-section">
+      <div class="container">
+        <div class="story-grid">
+          <div>
+            <div class="kicker">{{ t('our_story_kicker') }}</div>
+            <h2>{{ t('our_story') }}</h2>
+            <p class="story-p">{{ t('our_story_p1') }}</p>
+            <p class="story-p">{{ t('our_story_p2') }}</p>
+            <p class="story-p">{{ t('mission_desc') }}</p>
+          </div>
+          <div class="story-visual">
+            <img src="https://picsum.photos/seed/pymall-story/760/500" alt="Story">
+            <span class="sv-tag">PyMall</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 使命 -->
+    <section class="mission-band">
+      <div class="mission-inner">
+        <div class="kicker">{{ t('mission_kicker') }}</div>
+        <h2>{{ t('mission_title') }}</h2>
+        <p class="mission-desc">{{ t('mission_desc') }}</p>
+        <div class="mission-points">
+          <div class="mission-point"><span class="mp-ic">🎨</span>{{ t('mission_p1') }}</div>
+          <div class="mission-point"><span class="mp-ic">🌍</span>{{ t('mission_p2') }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 探索 Discover（仿 POP LAND / INNER FLOW / POP TOY SHOW） -->
+    <section class="discover-section">
+      <div class="container">
+        <div class="discover-header">
+          <div class="kicker">{{ t('discover_kicker') }}</div>
+          <h2>{{ t('discover_title') }}</h2>
+          <p class="discover-desc">{{ t('discover_desc') }}</p>
+        </div>
+        <div class="discover-grid">
+          <div class="discover-card">
+            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-store/600/400" alt="Store"></div>
+            <div class="dc-body">
+              <div class="dc-title">🛍️ {{ t('discover_1_title') }}</div>
+              <div class="dc-desc">{{ t('discover_1_desc') }}</div>
+              <a class="dc-link" href="/products.html">{{ t('shop_now') }} →</a>
+            </div>
+          </div>
+          <div class="discover-card">
+            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-creator/600/400" alt="Creator"></div>
+            <div class="dc-body">
+              <div class="dc-title">🎨 {{ t('discover_2_title') }}</div>
+              <div class="dc-desc">{{ t('discover_2_desc') }}</div>
+            </div>
+          </div>
+          <div class="discover-card">
+            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-community/600/400" alt="Community"></div>
+            <div class="dc-body">
+              <div class="dc-title">💬 {{ t('discover_3_title') }}</div>
+              <div class="dc-desc">{{ t('discover_3_desc') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 成长历程 -->
+    <section class="milestones">
+      <div class="container">
+        <div class="milestones-header">
+          <div class="kicker">{{ t('milestones_kicker') }}</div>
+          <h2>{{ t('milestones_title') }}</h2>
+        </div>
+        <div class="milestones-grid">
+          <div class="milestone-card">
+            <div class="ml-time">{{ t('m1_time') }}</div>
+            <div class="ml-title">{{ t('m1_title') }}</div>
+            <div class="ml-desc">{{ t('m1_desc') }}</div>
+          </div>
+          <div class="milestone-card">
+            <div class="ml-time">{{ t('m2_time') }}</div>
+            <div class="ml-title">{{ t('m2_title') }}</div>
+            <div class="ml-desc">{{ t('m2_desc') }}</div>
+          </div>
+          <div class="milestone-card">
+            <div class="ml-time">{{ t('m3_time') }}</div>
+            <div class="ml-title">{{ t('m3_title') }}</div>
+            <div class="ml-desc">{{ t('m3_desc') }}</div>
+          </div>
+          <div class="milestone-card">
+            <div class="ml-time">{{ t('m4_time') }}</div>
+            <div class="ml-title">{{ t('m4_title') }}</div>
+            <div class="ml-desc">{{ t('m4_desc') }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 价值观 -->
+    <section class="values-section">
+      <div class="container">
+        <div class="values-header">
+          <div class="kicker">{{ t('values_kicker') }}</div>
+          <h2>{{ t('values_title') }}</h2>
+        </div>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="v-ic">💡</div>
+            <div class="v-title">{{ t('v1_title') }}</div>
+            <div class="v-desc">{{ t('v1_desc') }}</div>
+          </div>
+          <div class="value-card">
+            <div class="v-ic">🤝</div>
+            <div class="v-title">{{ t('v2_title') }}</div>
+            <div class="v-desc">{{ t('v2_desc') }}</div>
+          </div>
+          <div class="value-card">
+            <div class="v-ic">🌏</div>
+            <div class="v-title">{{ t('v3_title') }}</div>
+            <div class="v-desc">{{ t('v3_desc') }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 加入社区 -->
+    <section class="join-band">
+      <h2>💌 {{ t('join_title') }}</h2>
+      <p>{{ t('join_desc') }}</p>
+      <div class="join-form">
+        <input :placeholder="t('join_ph')" v-model="email">
+        <button @click="sub">{{ t('join_btn') }}</button>
+      </div>
+    </section>
+
+    <site-footer></site-footer>
+    <auth-modal></auth-modal>
+  </div>
+
+  <script src="/static/js/vue.global.prod.js"></script>
+  <script src="/static/js/pymall.js?v=5"></script>
+  <script>
+    (function () {
+      var PyMall = window.PyMall;
+      var Vue = PyMall.Vue;
+      var t = PyMall.t;
+
+      window.mountPyMall({
+        setup() {
+          var state = Vue.reactive({ email: '' });
+
+          function sub() {
+            if (!state.email) return;
+            PyMall.toast(t('join_ok'), 'success');
+            state.email = '';
+          }
+
+          return {
+            t: t,
+            email: Vue.computed(function () { return state.email; }),
+            sub: sub,
+          };
+        },
+      });
+    })();
+  </script>
+</body>
+</html>

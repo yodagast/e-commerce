@@ -1,0 +1,707 @@
+"""全量 API 接口测试。
+
+覆盖 :mod:`app.routers` 下所有公开接口：
+- 公共接口：健康检查、分类、商品列表/详情/搜索
+- 认证接口：注册、登录、当前用户
+- 购物车接口：查/加/改/删/清空
+- 订单接口：下单、订单列表/详情、支付、取消、确认收货
+- 后台接口：管理员登录、仪表盘、商品管理、SKU/库存、订单管理、分类、库存流水
+
+运行（需先启动服务）：
+    .venv/bin/python -m pytest test/test_api.py -v
+"""
+from __future__ import annotations
+
+import time
+
+import pytest
+import requests
+
+BASE = "http://127.0.0.1:8010"
+H = {"Accept-Language": "zh"}
+
+BUYER_EMAIL = "buyer@example.com"
+BUYER_PASS = "buyer123"
+ADMIN_USER = "admin"
+ADMIN_PASS = "admin123"
+
+ts = int(time.time())
+TEST_EMAIL = f"test_{ts}@example.com"
+
+
+# ---------- fixtures ----------
+@pytest.fixture(scope="module")
+def buyer_token():
+    r = requests.post(f"{BASE}/api/auth/login", json={"email": BUYER_EMAIL, "password": BUYER_PASS})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}", **H}
+
+
+@pytest.fixture(scope="module")
+def admin_token():
+    r = requests.post(f"{BASE}/api/admin/login", json={"username": ADMIN_USER, "password": ADMIN_PASS})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}", **H}
+
+
+# ---------- 公共接口 ----------
+class TestPublic:
+    def test_health(self):
+        r = requests.get(f"{BASE}/api/health")
+        assert r.status_code == 200
+        assert r.json()["status"] == "ok"
+
+    def test_categories(self):
+        r = requests.get(f"{BASE}/api/categories", headers=H)
+        assert r.status_code == 200
+        cats = r.json()
+        assert isinstance(cats, list) and len(cats) > 0
+        assert all("id" in c and "name_i18n" in c for c in cats)
+
+    def test_products_list(self):
+        r = requests.get(f"{BASE}/api/products", headers=H)
+        assert r.status_code == 200
+        items = r.json()
+        assert isinstance(items, list) and len(items) > 0
+        first = items[0]
+        for key in ("id", "sku_code", "base_price", "display_name"):
+            assert key in first
+
+    def test_products_pagination(self):
+        r = requests.get(f"{BASE}/api/products?page=1&page_size=3", headers=H)
+        assert r.status_code == 200
+        assert len(r.json()) <= 3
+
+    def test_products_featured(self):
+        r = requests.get(f"{BASE}/api/products?featured=true", headers=H)
+        assert r.status_code == 200
+        assert all(p["is_featured"] for p in r.json())
+
+    def test_products_category_filter(self):
+        cats = requests.get(f"{BASE}/api/categories", headers=H).json()
+        cid = cats[0]["id"]
+        r = requests.get(f"{BASE}/api/products", params={"category_id": cid}, headers=H)
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) > 0
+        # 列表响应不含 category_id，改用详情接口核对分类归属
+        for p in items[:3]:
+            detail = requests.get(f"{BASE}/api/products/{p['id']}", headers=H).json()
+            assert detail["category_id"] == cid, f"商品 {p['id']} 不属于分类 {cid}"
+
+    def test_products_search_chinese(self):
+        # 中文搜索（JSONB #>> 修复的回归用例）
+        r = requests.get(f"{BASE}/api/products", params={"q": "手机"}, headers=H)
+        assert r.status_code == 200
+        names = [p.get("display_name", "") for p in r.json()]
+        assert any("手机" in n or "Phone" in n for n in names)
+
+    def test_products_search_none(self):
+        r = requests.get(f"{BASE}/api/products", params={"q": "不存在的商品xyz"}, headers=H)
+        assert r.status_code == 200
+        assert r.json() == []
+
+    def test_product_detail(self):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        r = requests.get(f"{BASE}/api/products/{pid}", headers=H)
+        assert r.status_code == 200
+        detail = r.json()
+        assert detail["id"] == pid
+        assert "skus" in detail and len(detail["skus"]) >= 1
+
+    def test_product_detail_404(self):
+        r = requests.get(f"{BASE}/api/products/999999", headers=H)
+        assert r.status_code == 404
+
+
+# ---------- 认证接口 ----------
+class TestAuth:
+    def test_register(self):
+        payload = {"email": TEST_EMAIL, "password": "test123", "full_name": "测试用户"}
+        r = requests.post(f"{BASE}/api/auth/register", json=payload)
+        assert r.status_code == 201, r.text
+        assert "access_token" in r.json()
+
+    def test_register_duplicate(self):
+        payload = {"email": BUYER_EMAIL, "password": "whatever123"}
+        r = requests.post(f"{BASE}/api/auth/register", json=payload)
+        assert r.status_code == 409
+
+    def test_login_ok(self):
+        r = requests.post(f"{BASE}/api/auth/login", json={"email": BUYER_EMAIL, "password": BUYER_PASS})
+        assert r.status_code == 200
+        assert "access_token" in r.json()
+
+    def test_login_wrong_password(self):
+        r = requests.post(f"{BASE}/api/auth/login", json={"email": BUYER_EMAIL, "password": "wrong"})
+        assert r.status_code == 401
+
+    def test_login_missing_user(self):
+        r = requests.post(f"{BASE}/api/auth/login", json={"email": "nobody@example.com", "password": "x123456"})
+        assert r.status_code == 401
+
+    def test_me(self, buyer_token):
+        r = requests.get(f"{BASE}/api/auth/me", headers=buyer_token)
+        assert r.status_code == 200
+        assert r.json()["email"] == BUYER_EMAIL
+
+    def test_me_unauthorized(self):
+        r = requests.get(f"{BASE}/api/auth/me")
+        assert r.status_code == 401
+
+
+# ---------- 购物车接口 ----------
+class TestCart:
+    def _first_sku(self):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        detail = requests.get(f"{BASE}/api/products/{pid}", headers=H).json()
+        return detail["skus"][0]["id"], detail["skus"][0]["available_stock"]
+
+    def test_cart_requires_login(self):
+        r = requests.get(f"{BASE}/api/cart")
+        assert r.status_code == 401
+
+    def test_add_and_get(self, buyer_token):
+        sku_id, _ = self._first_sku()
+        r = requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 1}, headers=buyer_token)
+        assert r.status_code == 201, r.text
+        cart = r.json()
+        assert len(cart["items"]) >= 1
+        assert str(cart["total_amount"]) != "0"
+
+        # 获取购物车
+        r2 = requests.get(f"{BASE}/api/cart", headers=buyer_token)
+        assert r2.status_code == 200
+
+    def test_add_invalid_quantity(self, buyer_token):
+        sku_id, _ = self._first_sku()
+        r = requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 0}, headers=buyer_token)
+        assert r.status_code == 422
+
+    def test_add_nonexistent_sku(self, buyer_token):
+        r = requests.post(f"{BASE}/api/cart/items", json={"sku_id": 999999, "quantity": 1}, headers=buyer_token)
+        assert r.status_code == 404
+
+    def test_update_and_remove(self, buyer_token):
+        # 加购
+        sku_id, stock = self._first_sku()
+        add = requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 2}, headers=buyer_token)
+        assert add.status_code == 201
+        item_id = add.json()["items"][0]["id"]
+
+        # 修改数量
+        upd = requests.put(f"{BASE}/api/cart/items/{item_id}", json={"quantity": 3}, headers=buyer_token)
+        assert upd.status_code == 200
+        assert upd.json()["items"][0]["quantity"] == 3
+
+        # 库存上限校验
+        over_qty = stock + 5 if stock < 1_000_000 else 500
+        r_over = requests.put(f"{BASE}/api/cart/items/{item_id}", json={"quantity": over_qty}, headers=buyer_token)
+        assert r_over.status_code == 400
+
+        # 删除
+        rem = requests.delete(f"{BASE}/api/cart/items/{item_id}", headers=buyer_token)
+        assert rem.status_code == 200
+
+        # 删除不存在
+        r_404 = requests.delete(f"{BASE}/api/cart/items/{item_id}", headers=buyer_token)
+        assert r_404.status_code == 404
+
+    def test_clear(self, buyer_token):
+        sku_id, _ = self._first_sku()
+        requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 1}, headers=buyer_token)
+        r = requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        assert r.status_code == 200
+        cart = requests.get(f"{BASE}/api/cart", headers=buyer_token).json()
+        assert cart["items"] == []
+
+
+# ---------- 高级筛选 / Autocomplete ----------
+class TestCatalogFilter:
+    def test_min_max_price(self):
+        r = requests.get(f"{BASE}/api/products", params={"min_price": 100, "max_price": 5000}, headers=H)
+        assert r.status_code == 200
+        items = r.json()
+        assert len(items) > 0
+        for p in items:
+            assert 100 <= float(p["base_price"]) <= 5000
+
+    def test_min_price_only(self):
+        r = requests.get(f"{BASE}/api/products", params={"min_price": 99999}, headers=H)
+        assert r.status_code == 200
+        assert r.json() == []
+
+    def test_sort_price_desc(self):
+        r = requests.get(f"{BASE}/api/products", params={"sort_by": "price_desc"}, headers=H)
+        assert r.status_code == 200
+        prices = [float(p["base_price"]) for p in r.json()]
+        assert prices == sorted(prices, reverse=True)
+
+    def test_sort_sales_desc(self):
+        r = requests.get(f"{BASE}/api/products", params={"sort_by": "sales_desc"}, headers=H)
+        assert r.status_code == 200
+        sales = [p.get("sales_count", 0) for p in r.json()]
+        assert sales == sorted(sales, reverse=True)
+
+    def test_autocomplete_zh(self):
+        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "智能"}, headers=H)
+        assert r.status_code == 200
+        results = r.json()
+        assert isinstance(results, list) and len(results) > 0
+        assert all("id" in x and "name_zh" in x for x in results)
+
+    def test_autocomplete_en(self):
+        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "phone"}, headers=H)
+        assert r.status_code == 200
+        assert len(r.json()) > 0
+
+    def test_autocomplete_empty(self):
+        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "zzz不存在"}, headers=H)
+        assert r.status_code == 200
+        assert r.json() == []
+
+
+# ---------- 收藏 ----------
+class TestWishlist:
+    def test_requires_auth(self):
+        r = requests.get(f"{BASE}/api/wishlist")
+        assert r.status_code == 401
+
+    def test_add_and_list(self, buyer_token):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        r = requests.post(f"{BASE}/api/wishlist", json={"product_id": pid}, headers=buyer_token)
+        assert r.status_code == 201, r.text
+        data = r.json()
+        assert data["total"] >= 1
+        assert pid in data["product_ids"]
+
+        lst = requests.get(f"{BASE}/api/wishlist", headers=buyer_token).json()
+        assert any(i["product_id"] == pid for i in lst["items"])
+
+    def test_add_duplicate_is_idempotent(self, buyer_token):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        requests.post(f"{BASE}/api/wishlist", json={"product_id": pid}, headers=buyer_token)
+        r2 = requests.post(f"{BASE}/api/wishlist", json={"product_id": pid}, headers=buyer_token)
+        # 幂等：再次添加不报错（201 或 200 均可），且列表中只有一条
+        assert r2.status_code in (200, 201)
+        lst = requests.get(f"{BASE}/api/wishlist", headers=buyer_token).json()
+        count = sum(1 for i in lst["items"] if i["product_id"] == pid)
+        assert count == 1
+
+    def test_remove(self, buyer_token):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[1 % len(items)]["id"]
+        requests.post(f"{BASE}/api/wishlist", json={"product_id": pid}, headers=buyer_token)
+        r = requests.delete(f"{BASE}/api/wishlist/{pid}", headers=buyer_token)
+        assert r.status_code == 200
+        lst = requests.get(f"{BASE}/api/wishlist", headers=buyer_token).json()
+        assert all(i["product_id"] != pid for i in lst["items"])
+
+    def test_move_to_cart(self, buyer_token):
+        # 清空购物车再测试
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        detail = requests.get(f"{BASE}/api/products/{pid}", headers=H).json()
+        sku_id = detail["skus"][0]["id"]
+        requests.post(f"{BASE}/api/wishlist", json={"product_id": pid}, headers=buyer_token)
+        r = requests.post(f"{BASE}/api/wishlist/move-to-cart/{pid}", headers=buyer_token)
+        assert r.status_code == 200, r.text
+        cart = requests.get(f"{BASE}/api/cart", headers=buyer_token).json()
+        assert any(c["sku_id"] == sku_id for c in cart["items"])
+        # 移入购物车后应取消收藏
+        lst = requests.get(f"{BASE}/api/wishlist", headers=buyer_token).json()
+        assert all(i["product_id"] != pid for i in lst["items"])
+
+    def test_clear(self, buyer_token):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        for p in items[:2]:
+            requests.post(f"{BASE}/api/wishlist", json={"product_id": p["id"]}, headers=buyer_token)
+        r = requests.delete(f"{BASE}/api/wishlist", headers=buyer_token)
+        assert r.status_code == 200
+        lst = requests.get(f"{BASE}/api/wishlist", headers=buyer_token).json()
+        assert lst["items"] == []
+
+
+# ---------- 地址 ----------
+class TestAddresses:
+    def test_requires_auth(self):
+        r = requests.get(f"{BASE}/api/addresses")
+        assert r.status_code == 401
+
+    def test_crud(self, buyer_token):
+        # 创建
+        r = requests.post(f"{BASE}/api/addresses", json={
+            "receiver_name": "测试收货人", "receiver_phone": "13900000000",
+            "detail": "上海市浦东新区测试路 88 号", "is_default": True,
+        }, headers=buyer_token)
+        assert r.status_code == 201, r.text
+        addr = r.json()
+        assert addr["is_default"] is True
+        aid = addr["id"]
+
+        # 列表
+        lst = requests.get(f"{BASE}/api/addresses", headers=buyer_token).json()
+        assert any(a["id"] == aid for a in lst)
+
+        # 更新
+        r = requests.put(f"{BASE}/api/addresses/{aid}", json={"receiver_name": "新名字"}, headers=buyer_token)
+        assert r.status_code == 200
+        assert r.json()["receiver_name"] == "新名字"
+
+        # 删除
+        r = requests.delete(f"{BASE}/api/addresses/{aid}", headers=buyer_token)
+        assert r.status_code == 200
+        lst2 = requests.get(f"{BASE}/api/addresses", headers=buyer_token).json()
+        assert all(a["id"] != aid for a in lst2)
+
+    def test_default_switch(self, buyer_token):
+        a1 = requests.post(f"{BASE}/api/addresses", json={
+            "receiver_name": "甲", "receiver_phone": "139",
+            "detail": "地址一", "is_default": False,
+        }, headers=buyer_token).json()
+        a2 = requests.post(f"{BASE}/api/addresses", json={
+            "receiver_name": "乙", "receiver_phone": "138",
+            "detail": "地址二", "is_default": True,
+        }, headers=buyer_token).json()
+        # 新默认生效，之前的取消默认
+        lst = requests.get(f"{BASE}/api/addresses", headers=buyer_token).json()
+        for a in lst:
+            if a["id"] == a2["id"]:
+                assert a["is_default"] is True
+            if a["id"] == a1["id"]:
+                assert a["is_default"] is False
+        # 清理
+        requests.delete(f"{BASE}/api/addresses/{a1['id']}", headers=buyer_token)
+        requests.delete(f"{BASE}/api/addresses/{a2['id']}", headers=buyer_token)
+
+    def test_default_first_order(self, buyer_token):
+        """默认地址排在最前"""
+        requests.post(f"{BASE}/api/addresses", json={
+            "receiver_name": "普通", "receiver_phone": "137", "detail": "普通地址",
+        }, headers=buyer_token)
+        addr2 = requests.post(f"{BASE}/api/addresses", json={
+            "receiver_name": "默认主", "receiver_phone": "136", "detail": "默认地址", "is_default": True,
+        }, headers=buyer_token).json()
+        lst = requests.get(f"{BASE}/api/addresses", headers=buyer_token).json()
+        assert lst[0]["id"] == addr2["id"]
+        for a in lst:
+            requests.delete(f"{BASE}/api/addresses/{a['id']}", headers=buyer_token)
+
+
+# ---------- 评价 ----------
+class TestReviews:
+    def _new_user_token(self):
+        """注册一个全新的临时用户（避免历史购买/评价数据干扰）"""
+        email = f"rv_{ts}_{int(time.time()*1000)}@example.com"
+        r = requests.post(f"{BASE}/api/auth/register",
+                          json={"email": email, "password": "test123", "full_name": "评价测试"})
+        assert r.status_code == 201, r.text
+        return {"Authorization": f"Bearer {r.json()['access_token']}", **H}
+
+    def test_list_empty_public(self):
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[0]["id"]
+        r = requests.get(f"{BASE}/api/products/{pid}/reviews", headers=H)
+        assert r.status_code == 200
+        assert isinstance(r.json(), list)
+
+    def test_review_requires_purchase(self, admin_token):
+        """未购买过的商品不能评价（新用户无任何购买记录）"""
+        token = self._new_user_token()
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[-1]["id"]
+        r = requests.post(f"{BASE}/api/products/{pid}/reviews", json={
+            "rating": 5, "title": "不错", "content": "很喜欢这个商品",
+        }, headers=token)
+        assert r.status_code == 403, r.text
+
+    def test_review_requires_auth(self):
+        r = requests.post(f"{BASE}/api/products/1/reviews", json={
+            "rating": 5, "title": "t", "content": "c",
+        })
+        assert r.status_code == 401
+
+    def test_review_not_approved_until_moderation(self, admin_token):
+        """评价需审核后才能公开可见"""
+        # 新用户：注册 -> 下单 -> 评价 -> 审核前不可见 -> 审核后可见
+        token = self._new_user_token()
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        pid = items[-1]["id"]
+
+        # 1. 未购买时不可评
+        can = requests.get(f"{BASE}/api/products/{pid}/reviewable", headers=token).json()
+        assert can.get("reviewable") is False
+
+        # 2. 下单购买
+        detail = requests.get(f"{BASE}/api/products/{pid}", headers=H).json()
+        sku_id = detail["skus"][0]["id"]
+        requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 1}, headers=token)
+        r = requests.post(f"{BASE}/api/orders/checkout", json={
+            "receiver_name": "评价测试", "receiver_phone": "138",
+            "receiver_address": "测试地址", "payment_method": "mock",
+        }, headers=token)
+        assert r.status_code == 201, r.text
+
+        # 3. 购买后可评
+        can2 = requests.get(f"{BASE}/api/products/{pid}/reviewable", headers=token).json()
+        assert can2.get("reviewable") is True
+
+        # 4. 提交评价 -> pending
+        r = requests.post(f"{BASE}/api/products/{pid}/reviews", json={
+            "rating": 4, "title": "审核测试", "content": "这条评价待审核",
+        }, headers=token)
+        assert r.status_code == 201, r.text
+        review_id = r.json()["id"]
+
+        # 5. 审核前公开列表不可见
+        lst = requests.get(f"{BASE}/api/products/{pid}/reviews", headers=H).json()
+        assert all(x["id"] != review_id for x in lst)
+
+        # 6. 重复评价被拒（每人一评）
+        r = requests.post(f"{BASE}/api/products/{pid}/reviews", json={
+            "rating": 4, "title": "重复", "content": "重复评价",
+        }, headers=token)
+        assert r.status_code == 409, r.text
+
+        # 7. 管理员审核通过
+        r = requests.post(f"{BASE}/api/admin/reviews/{review_id}/moderate",
+                          json={"status": "approved"}, headers=admin_token)
+        assert r.status_code == 200, r.text
+
+        # 8. 审核后公开可见
+        lst2 = requests.get(f"{BASE}/api/products/{pid}/reviews", headers=H).json()
+        assert any(x["id"] == review_id for x in lst2)
+
+        # 9. 我的评价列表可见
+        mine = requests.get(f"{BASE}/api/my-reviews", headers=token).json()
+        assert any(x["id"] == review_id for x in mine)
+
+    def test_reviewable_requires_auth(self):
+        r = requests.get(f"{BASE}/api/products/1/reviewable")
+        assert r.status_code == 401
+
+
+# ---------- 订单与支付接口 ----------
+class TestOrders:
+    @pytest.fixture()
+    def order_no(self, buyer_token):
+        # 准备：清空购物车，加购一个商品，下单
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        detail = requests.get(f"{BASE}/api/products/{items[0]['id']}", headers=H).json()
+        sku_id = detail["skus"][0]["id"]
+        requests.post(f"{BASE}/api/cart/items", json={"sku_id": sku_id, "quantity": 1}, headers=buyer_token)
+
+        payload = {
+            "receiver_name": "张三",
+            "receiver_phone": "13800138000",
+            "receiver_address": "北京市朝阳区测试路 1 号",
+            "remark": "pytest 下单",
+            "payment_method": "mock",
+        }
+        r = requests.post(f"{BASE}/api/orders/checkout", json=payload, headers=buyer_token)
+        assert r.status_code == 201, r.text
+        return r.json()["order_no"]
+
+    def test_checkout_empty_cart(self, buyer_token):
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        payload = {
+            "receiver_name": "张三", "receiver_phone": "138", "receiver_address": "测试",
+            "payment_method": "mock",
+        }
+        r = requests.post(f"{BASE}/api/orders/checkout", json=payload, headers=buyer_token)
+        assert r.status_code == 400
+
+    def test_checkout_bad_method(self, buyer_token):
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        detail = requests.get(f"{BASE}/api/products/{items[0]['id']}", headers=H).json()
+        requests.post(f"{BASE}/api/cart/items",
+                      json={"sku_id": detail["skus"][0]["id"], "quantity": 1}, headers=buyer_token)
+        payload = {
+            "receiver_name": "张三", "receiver_phone": "138", "receiver_address": "测试",
+            "payment_method": "alipay",  # 未开通通道
+        }
+        r = requests.post(f"{BASE}/api/orders/checkout", json=payload, headers=buyer_token)
+        assert r.status_code == 400
+        assert "尚未开通" in r.json()["detail"] or "未配置" in r.json()["detail"]
+
+    def test_checkout_missing_fields(self, buyer_token):
+        r = requests.post(f"{BASE}/api/orders/checkout", json={"payment_method": "mock"}, headers=buyer_token)
+        assert r.status_code in (400, 422)
+
+    def test_order_list_and_detail(self, order_no, buyer_token):
+        r = requests.get(f"{BASE}/api/orders", headers=buyer_token)
+        assert r.status_code == 200
+        orders = r.json()
+        assert any(o["order_no"] == order_no for o in orders)
+
+        r2 = requests.get(f"{BASE}/api/orders/{order_no}", headers=buyer_token)
+        assert r2.status_code == 200
+        assert r2.json()["order_no"] == order_no
+
+    def test_order_flow_pay_confirm(self, order_no, buyer_token, admin_token):
+        # 支付
+        r = requests.post(f"{BASE}/api/orders/{order_no}/pay", headers=buyer_token)
+        assert r.status_code == 200, r.text
+        pay = r.json()
+        assert pay["success"] is True
+        assert "transaction_no" in pay and "pay_url" in pay
+
+        # 模拟支付确认
+        txn = pay["transaction_no"]
+        r2 = requests.get(f"{BASE}/api/payments/mock/confirm", params={"txn_no": txn})
+        assert r2.status_code == 200, r2.text
+        assert r2.json()["success"] is True
+        assert r2.json()["order_no"] == order_no
+
+        # 订单应为已支付
+        od = requests.get(f"{BASE}/api/orders/{order_no}", headers=buyer_token).json()
+        assert od["status"] == "paid"
+
+        # 管理后台发货
+        ship = requests.post(f"{BASE}/api/admin/orders/{order_no}/ship", headers=admin_token)
+        assert ship.status_code == 200, ship.text
+
+        # 客户确认收货
+        conf = requests.post(f"{BASE}/api/orders/{order_no}/confirm", headers=buyer_token)
+        assert conf.status_code == 200, conf.text
+
+        od2 = requests.get(f"{BASE}/api/orders/{order_no}", headers=buyer_token).json()
+        assert od2["status"] == "completed"
+
+    def test_order_cancel(self, buyer_token):
+        # 准备订单
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        items = requests.get(f"{BASE}/api/products", headers=H).json()
+        detail = requests.get(f"{BASE}/api/products/{items[0]['id']}", headers=H).json()
+        requests.post(f"{BASE}/api/cart/items",
+                      json={"sku_id": detail["skus"][0]["id"], "quantity": 1}, headers=buyer_token)
+        payload = {
+            "receiver_name": "李四", "receiver_phone": "139", "receiver_address": "测试",
+            "payment_method": "mock",
+        }
+        r = requests.post(f"{BASE}/api/orders/checkout", json=payload, headers=buyer_token)
+        assert r.status_code == 201
+        order_no = r.json()["order_no"]
+
+        r2 = requests.post(f"{BASE}/api/orders/{order_no}/cancel", headers=buyer_token)
+        assert r2.status_code == 200, r2.text
+        od = requests.get(f"{BASE}/api/orders/{order_no}", headers=buyer_token).json()
+        assert od["status"] == "cancelled"
+
+    def test_pay_unknown_order(self, buyer_token):
+        r = requests.post(f"{BASE}/api/orders/ORD_NOT_EXIST/pay", headers=buyer_token)
+        assert r.status_code == 404
+
+    def test_cancel_unknown_order(self, buyer_token):
+        r = requests.post(f"{BASE}/api/orders/ORD_NOT_EXIST/cancel", headers=buyer_token)
+        assert r.status_code == 404
+
+    def test_payment_callback_nonexistent(self):
+        # mock 网关信任任意 txn_no，未知交易号由 _mark_payment_success 抛 404
+        r = requests.post(f"{BASE}/api/payments/callback", json={"txn_no": "NO_SUCH_TXN"})
+        assert r.status_code == 404
+
+    def test_payment_query_nonexistent(self):
+        # 真正的 404 场景在查询接口
+        r = requests.get(f"{BASE}/api/payments/query/NO_SUCH_TXN")
+        assert r.status_code == 404
+
+
+# ---------- 后台接口 ----------
+class TestAdmin:
+    def test_admin_login_bad(self):
+        r = requests.post(f"{BASE}/api/admin/login", json={"username": ADMIN_USER, "password": "wrong"})
+        assert r.status_code == 401
+
+    def test_dashboard(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/dashboard", headers=admin_token)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        for key in ("products_count", "orders_count", "customers_count", "revenue"):
+            assert key in data
+
+    def test_admin_list_products(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/products", headers=admin_token)
+        assert r.status_code == 200
+        assert len(r.json()) >= 1
+
+    def test_admin_list_orders(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/orders", headers=admin_token)
+        assert r.status_code == 200
+
+    def test_admin_list_orders_status_filter(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/orders", params={"status": "pending"}, headers=admin_token)
+        assert r.status_code == 200
+
+    def test_admin_categories(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/categories", headers=admin_token)
+        assert r.status_code == 200
+        assert len(r.json()) >= 1
+
+    def test_admin_stock_movements(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/stock-movements", headers=admin_token)
+        assert r.status_code == 200
+
+    def test_admin_requires_auth(self):
+        r = requests.get(f"{BASE}/api/admin/dashboard")
+        assert r.status_code == 401
+
+    def test_customer_token_rejected_on_admin(self, buyer_token):
+        # 客户 token 不能访问后台
+        r = requests.get(f"{BASE}/api/admin/dashboard", headers=buyer_token)
+        assert r.status_code in (401, 403)
+
+    def test_admin_create_product_and_sku(self, admin_token):
+        sku_code = f"PYTEST-{ts}"
+        payload = {
+            "sku_code": sku_code,
+            "name_zh": f"测试商品 {ts}",
+            "name_en": f"Test Product {ts}",
+            "description_zh": "pytest 创建",
+            "base_price": "123.45",
+            "status": "active",
+            "skus": [
+                {"sku_code": f"{sku_code}-S", "attributes": {"颜色": "红色"}, "price": "123.45", "stock": 10},
+            ],
+        }
+        r = requests.post(f"{BASE}/api/admin/products", json=payload, headers=admin_token)
+        assert r.status_code == 201, r.text
+        product = r.json()
+        assert product["sku_code"] == sku_code
+        assert len(product["skus"]) == 1
+
+        # 为商品新增 SKU
+        sku_in = {"sku_code": f"{sku_code}-XL2", "attributes": {"颜色": "蓝色"},
+                  "price": "130.00", "stock": 5, "is_active": True}
+        r2 = requests.post(f"{BASE}/api/admin/products/{product['id']}/skus", json=sku_in, headers=admin_token)
+        assert r2.status_code == 201, r2.text
+
+        # 库存调整
+        r3 = requests.put(f"{BASE}/api/admin/skus/{product['skus'][0]['id']}/stock",
+                          json={"stock": 20, "reason": "pytest_adjust"}, headers=admin_token)
+        assert r3.status_code == 200, r3.text
+        assert r3.json()["stock"] == 20
+
+    def test_admin_create_category(self, admin_token):
+        code = f"pytest-{ts}"
+        payload = {"code": code, "name_i18n": {"zh": f"测试分类 {ts}", "en": f"Test Cat {ts}"},
+                   "sort_order": 999, "is_active": True}
+        r = requests.post(f"{BASE}/api/admin/categories", json=payload, headers=admin_token)
+        assert r.status_code == 201, r.text
+        assert r.json()["code"] == code
+
+    def test_admin_create_product_missing_fields(self, admin_token):
+        # 缺必填字段应 422
+        r = requests.post(f"{BASE}/api/admin/products", json={"sku_code": "X"}, headers=admin_token)
+        assert r.status_code == 422
+
+    def test_admin_ship_unknown_order(self, admin_token):
+        r = requests.post(f"{BASE}/api/admin/orders/ORD_NOT_EXIST/ship", headers=admin_token)
+        assert r.status_code == 404
