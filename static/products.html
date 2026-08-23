@@ -27,7 +27,7 @@
     <div class="container">
       <!-- 高级筛选栏 -->
       <div class="filter-bar" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;background:#fff;border:1px solid var(--jjs-border);border-radius:12px;padding:12px 16px">
-        <span style="font-size:13px;font-weight:600;color:var(--jjs-gray)">⚙ {{ t('filter') }}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--jjs-gray)"><base-icon name="filter" :size="14"></base-icon> {{ t('filter') }}</span>
         <select v-model="sortBy" style="height:34px;border:1px solid var(--jjs-border);border-radius:8px;padding:0 8px;font-size:13px" @change="loadProducts()">
           <option value="default">{{ t('sort_default') }}</option>
           <option value="price_asc">{{ t('sort_price_asc') }}</option>
@@ -39,8 +39,8 @@
         <span style="color:#999">—</span>
         <input v-model.number="maxPrice" type="number" min="0" :placeholder="t('max_price')"
                style="width:110px;height:34px;border:1px solid var(--jjs-border);border-radius:8px;padding:0 8px;font-size:13px">
-        <button class="btn btn-primary btn-sm" @click="applyFilter">✓ {{ t('confirm') }}</button>
-        <button class="btn btn-ghost btn-sm" @click="resetFilter">↺ {{ t('reset') }}</button>
+        <button class="btn btn-primary btn-sm" @click="applyFilter"><base-icon name="check" :size="14"></base-icon> {{ t('confirm') }}</button>
+        <button class="btn btn-ghost btn-sm" @click="resetFilter"><base-icon name="refresh" :size="14"></base-icon> {{ t('reset') }}</button>
       </div>
 
       <div class="section-header" style="margin-top:26px">
@@ -56,8 +56,6 @@
             <img :src="p.main_image || 'https://picsum.photos/seed/' + p.id + '/600/400'"
                  loading="lazy">
             <div class="product-tag" v-if="p.is_featured">HOT</div>
-            <button class="heart-btn" :class="{active: isWished(p.id)}"
-                    @click.stop.prevent="toggleWish(p)">♥</button>
           </div>
           <div class="body">
             <div class="name">{{ p.display_name || p.sku_code }}</div>
@@ -65,8 +63,12 @@
               <span class="price">{{ money(p.base_price) }}</span>
             </div>
             <div class="meta">
-              <span>🔥 {{ t('sold') }} {{ p.sales_count || 0 }}</span>
-              <span class="buy-link" @click.stop.prevent="buyNow(p)">⚡ {{ t('buy_now') }}</span>
+              <span><base-icon name="fire" :size="13"></base-icon> {{ t('sold') }} {{ p.sales_count || 0 }}</span>
+              <span class="product-actions">
+                <button class="fav-star" :class="{active: isWished(p.id)}"
+                        @click.stop.prevent="toggleWish(p)" :title="t('wishlist')"><base-icon name="star" :size="15" :fill="isWished(p.id)"></base-icon></button>
+                <span class="buy-link" @click.stop.prevent="buyNow(p)"><base-icon name="zap" :size="13"></base-icon> {{ t('buy_now') }}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -75,7 +77,7 @@
         <div class="spinner"></div>{{ t('loading') }}
       </div>
       <div class="empty" v-else>
-        <div class="empty-icon">🔍</div>
+        <div class="empty-icon"><base-icon name="search" :size="52"></base-icon></div>
         <div>{{ t('no_result') }}</div>
         <button class="btn btn-outline" style="margin-top:14px" @click="resetFilter">
           {{ t('clear_search') }}
@@ -106,13 +108,6 @@
               {{ money(selectedSku ? selectedSku.price : detail.base_price) }}
             </div>
             <div class="detail-desc">{{ detailDesc }}</div>
-            <div class="detail-fav-row">
-              <button class="btn btn-sm" :class="isWished(detail.id) ? 'btn-primary' : 'btn-outline'"
-                      @click="toggleWish(detail)">
-                <span v-if="isWished(detail.id)">♥ {{ t('wishlisted') }}</span>
-                <span v-else>♡ {{ t('add_wishlist') }}</span>
-              </button>
-            </div>
             <div class="detail-block">
               <div class="detail-label">{{ t('sku') }}</div>
               <div class="sku-list">
@@ -133,9 +128,16 @@
                 <button @click="qty = Math.min(maxQty, qty + 1)">+</button>
               </div>
             </div>
+            <div class="detail-fav-row">
+              <button class="btn btn-sm btn-block" :class="isWished(detail.id) ? 'btn-primary' : 'btn-outline'"
+                      @click="toggleWish(detail)">
+                <base-icon name="star" :size="16" :fill="isWished(detail.id)"></base-icon>
+                {{ isWished(detail.id) ? t('wishlisted') : t('add_wishlist') }}
+              </button>
+            </div>
             <div class="detail-actions">
-              <button class="btn btn-primary btn-lg" @click="addToCart">🛒 {{ t('add_to_cart') }}</button>
-              <button class="btn btn-outline btn-lg" @click="buyNow">⚡ {{ t('buy_now') }}</button>
+              <button class="btn btn-primary btn-lg" @click="addToCart"><base-icon name="cart" :size="18"></base-icon> {{ t('add_to_cart') }}</button>
+              <button class="btn btn-outline btn-lg" @click="buyNow"><base-icon name="zap" :size="18"></base-icon> {{ t('buy_now') }}</button>
             </div>
           </div>
         </div>
@@ -151,9 +153,8 @@
             <div class="star-row" style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <span>{{ t('review_rating') }}:</span>
               <button v-for="n in 5" :key="n"
-                      :class="{star_on: n <= (reviewForm.rating||0)}"
                       style="font-size:22px;background:none;border:none;cursor:pointer;color:#ccc;padding:0 2px"
-                      @click="reviewForm.rating = n"><span class="star">★</span></button>
+                      @click="reviewForm.rating = n"><base-icon name="star" :size="20" :fill="n <= (reviewForm.rating||0)" :style="n <= (reviewForm.rating||0) ? 'color:#f5a623' : 'color:#ccc'"></base-icon></button>
             </div>
             <input v-model="reviewForm.title" class="form-input"
                    :placeholder="t('review_title')" style="margin-bottom:10px" maxlength="80">
@@ -161,7 +162,7 @@
                       :placeholder="t('review_placeholder')" rows="3"
                       style="margin-bottom:10px;resize:vertical"></textarea>
             <button class="btn btn-primary" :disabled="reviewSubmitting"
-                    @click="submitReview">✍ {{ t('review_submit') }}</button>
+                    @click="submitReview"><base-icon name="pencil" :size="15"></base-icon> {{ t('review_submit') }}</button>
           </div>
           <div v-else class="review-login-tip"
                style="font-size:13px;color:#999;margin-bottom:16px">
@@ -177,7 +178,7 @@
                   {{ r.customer_name }}
                 </div>
                 <div class="stars" style="color:var(--jjs-gold);font-size:14px">
-                  <span class="star" v-for="n in r.rating" :key="n">★</span>
+                  <base-icon name="star" :size="14" fill v-for="n in r.rating" :key="n" style="color:#f5a623"></base-icon>
                 </div>
               </div>
               <div v-if="r.title" style="font-size:14px;font-weight:600;margin-bottom:4px">{{ r.title }}</div>
@@ -196,7 +197,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;

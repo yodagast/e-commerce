@@ -16,6 +16,7 @@ from app.routers import (
     cart,
     catalog,
     cms,
+    newsletter,
     orders,
     payments,
     reviews,
@@ -62,6 +63,7 @@ app.include_router(wishlist.router)
 app.include_router(addresses.router)
 app.include_router(wishlist.router)
 app.include_router(cms.router)
+app.include_router(newsletter.router)
 app.include_router(uploads.router)
 app.include_router(admin.router)
 

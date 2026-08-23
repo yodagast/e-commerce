@@ -435,8 +435,8 @@
         <h2>{{ t('mission_title') }}</h2>
         <p class="mission-desc">{{ t('mission_desc') }}</p>
         <div class="mission-points">
-          <div class="mission-point"><span class="mp-ic">🎨</span>{{ t('mission_p1') }}</div>
-          <div class="mission-point"><span class="mp-ic">🌍</span>{{ t('mission_p2') }}</div>
+          <div class="mission-point"><span class="mp-ic"><base-icon name="palette" :size="20"></base-icon></span>{{ t('mission_p1') }}</div>
+          <div class="mission-point"><span class="mp-ic"><base-icon name="globe" :size="20"></base-icon></span>{{ t('mission_p2') }}</div>
         </div>
       </div>
     </section>
@@ -453,22 +453,22 @@
           <div class="discover-card">
             <div class="dc-img"><img src="https://picsum.photos/seed/pymall-store/600/400" alt="Store"></div>
             <div class="dc-body">
-              <div class="dc-title">🛍️ {{ t('discover_1_title') }}</div>
+              <div class="dc-title"><base-icon name="bag" :size="18"></base-icon> {{ t('discover_1_title') }}</div>
               <div class="dc-desc">{{ t('discover_1_desc') }}</div>
-              <a class="dc-link" href="/products.html">{{ t('shop_now') }} →</a>
+              <a class="dc-link" href="/products.html">{{ t('shop_now') }} <base-icon name="chevronRight" :size="14"></base-icon></a>
             </div>
           </div>
           <div class="discover-card">
             <div class="dc-img"><img src="https://picsum.photos/seed/pymall-creator/600/400" alt="Creator"></div>
             <div class="dc-body">
-              <div class="dc-title">🎨 {{ t('discover_2_title') }}</div>
+              <div class="dc-title"><base-icon name="palette" :size="18"></base-icon> {{ t('discover_2_title') }}</div>
               <div class="dc-desc">{{ t('discover_2_desc') }}</div>
             </div>
           </div>
           <div class="discover-card">
             <div class="dc-img"><img src="https://picsum.photos/seed/pymall-community/600/400" alt="Community"></div>
             <div class="dc-body">
-              <div class="dc-title">💬 {{ t('discover_3_title') }}</div>
+              <div class="dc-title"><base-icon name="review" :size="18"></base-icon> {{ t('discover_3_title') }}</div>
               <div class="dc-desc">{{ t('discover_3_desc') }}</div>
             </div>
           </div>
@@ -517,17 +517,17 @@
         </div>
         <div class="values-grid">
           <div class="value-card">
-            <div class="v-ic">💡</div>
+            <div class="v-ic"><base-icon name="bulb" :size="24"></base-icon></div>
             <div class="v-title">{{ t('v1_title') }}</div>
             <div class="v-desc">{{ t('v1_desc') }}</div>
           </div>
           <div class="value-card">
-            <div class="v-ic">🤝</div>
+            <div class="v-ic"><base-icon name="handshake" :size="24"></base-icon></div>
             <div class="v-title">{{ t('v2_title') }}</div>
             <div class="v-desc">{{ t('v2_desc') }}</div>
           </div>
           <div class="value-card">
-            <div class="v-ic">🌏</div>
+            <div class="v-ic"><base-icon name="globe" :size="24"></base-icon></div>
             <div class="v-title">{{ t('v3_title') }}</div>
             <div class="v-desc">{{ t('v3_desc') }}</div>
           </div>
@@ -537,7 +537,7 @@
 
     <!-- 加入社区 -->
     <section class="join-band">
-      <h2>💌 {{ t('join_title') }}</h2>
+      <h2><base-icon name="mail" :size="20"></base-icon> {{ t('join_title') }}</h2>
       <p>{{ t('join_desc') }}</p>
       <div class="join-form">
         <input :placeholder="t('join_ph')" v-model="email">
@@ -550,7 +550,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -562,9 +562,15 @@
           var state = Vue.reactive({ email: '' });
 
           function sub() {
-            if (!state.email) return;
-            PyMall.toast(t('join_ok'), 'success');
-            state.email = '';
+            if (!state.email) { PyMall.toast(t('join_ph'), 'error'); return; }
+            var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRe.test(state.email)) { PyMall.toast(t('invalid_email'), 'error'); return; }
+            PyMall.api('/api/subscribe', { method: 'POST', noLang: true, body: { email: state.email } })
+              .then(function (d) {
+                PyMall.toast(d.message || t('join_ok'), 'success');
+                state.email = '';
+              })
+              .catch(function (e) { PyMall.toast(e.message, 'error'); });
           }
 
           return {

@@ -12,6 +12,12 @@
 from __future__ import annotations
 
 import asyncio
+import os
+
+# 测试环境强制走「开发模式」邮件：不发真实邮件，验证码打印在服务日志/回传 debug_code。
+# （pydantic-settings 环境变量优先级高于 .env，故此处覆盖 SMTP_USER 为空即可。）
+os.environ["SMTP_USER"] = ""
+os.environ["SMTP_HOST"] = ""
 
 import pytest
 from sqlalchemy import delete, update
@@ -20,8 +26,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import async_session_factory
 from app.models import (
     Address,
+    AdminUser,
     Category,
     Customer,
+    EmailVerifyCode,
+    NewsletterSubscriber,
     Order,
     OrderItem,
     Product,
@@ -61,8 +70,35 @@ async def _cleanup() -> None:
             await session.execute(
                 delete(Address).where(Address.customer_id.in_(ids))
             )
+        # 邮箱验证码测试数据
+        await session.execute(
+            delete(EmailVerifyCode).where(
+                EmailVerifyCode.email.like("code\\_%@example.com")
+            )
+        )
+        await session.execute(
+            delete(EmailVerifyCode).where(
+                EmailVerifyCode.email.like("test\\_%@example.com")
+            )
+        )
+        await session.execute(
+            delete(EmailVerifyCode).where(
+                EmailVerifyCode.email.like("rv\\_%@example.com")
+            )
+        )
+        # 测试账号发出的验证码（防止残留）
         await session.execute(delete(Product).where(Product.sku_code.like("PYTEST-%")))
         await session.execute(delete(Category).where(Category.code.like("pytest-%")))
+        # 订阅者测试数据
+        await session.execute(
+            delete(NewsletterSubscriber).where(
+                NewsletterSubscriber.email.like("sub\\_%@example.com")
+            )
+        )
+        # 测试管理员账号（ptest_ 前缀）
+        await session.execute(
+            delete(AdminUser).where(AdminUser.username.like("ptest\\_%"))
+        )
         await session.execute(
             delete(Customer).where(Customer.email.like("test\\_%@example.com"))
         )

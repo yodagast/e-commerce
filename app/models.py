@@ -158,6 +158,19 @@ class Customer(Base):
     addresses = relationship("Address", back_populates="customer")
 
 
+class EmailVerifyCode(Base):
+    """邮箱注册验证码"""
+    __tablename__ = "email_verify_codes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), index=True)
+    code: Mapped[str] = mapped_column(String(10), nullable=False)
+    purpose: Mapped[str] = mapped_column(String(20), default="register")  # register / reset
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    used: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
 class CartItem(Base):
     """购物车条目（按 SKU 维度）"""
     __tablename__ = "cart_items"
@@ -394,3 +407,13 @@ class SiteBanner(Base):
 
     def button_text(self, lang: str) -> str:
         return self.button_text_i18n.get(lang) or self.button_text_i18n.get("zh", "")
+
+
+class NewsletterSubscriber(Base):
+    """新闻订阅者（首页/页脚「订阅优惠信息」）"""
+    __tablename__ = "newsletter_subscribers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

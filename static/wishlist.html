@@ -12,7 +12,7 @@
     <main-nav active="wishlist"></main-nav>
 
     <div class="container">
-      <h1 class="page-title">❤ {{ t('my_wishlist') }}</h1>
+      <h1 class="page-title"><base-icon name="star" :size="24" fill style="color:#f5a623"></base-icon> {{ t('my_wishlist') }}</h1>
 
       <div class="loading" v-if="loading">
         <div class="spinner"></div>{{ t('loading') }}
@@ -20,7 +20,7 @@
 
       <!-- 未登录 -->
       <div class="empty" v-else-if="notLoggedIn" style="padding-top:30px">
-        <div class="empty-icon">🔒</div>
+        <div class="empty-icon"><base-icon name="lock" :size="52"></base-icon></div>
         <div>{{ t('need_login') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="doLogin">
           {{ t('login') }}
@@ -29,7 +29,7 @@
 
       <!-- 空收藏 -->
       <div class="empty" v-else-if="!items.length" style="padding-top:30px">
-        <div class="empty-icon">💔</div>
+        <div class="empty-icon"><base-icon name="star" :size="52"></base-icon></div>
         <div>{{ t('wishlist_empty') }}</div>
         <div style="font-size:13px;margin-top:6px">{{ t('wishlist_empty_desc') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="goShopping">
@@ -42,7 +42,7 @@
         <div class="product-card" v-for="it in items" :key="it.product_id">
           <div class="imgwrap" @click="goDetail(it)">
             <img :src="it.main_image || 'https://picsum.photos/seed/' + it.product_id + '/600/400'" loading="lazy">
-            <button class="wishlist-remove" @click.stop="remove(it)">🗑</button>
+            <button class="wishlist-remove" @click.stop="remove(it)"><base-icon name="trash" :size="15"></base-icon></button>
           </div>
           <div class="body" @click="goDetail(it)">
             <div class="name">{{ it.product_name }}</div>
@@ -51,7 +51,7 @@
             </div>
           </div>
           <div class="wishlist-actions">
-            <button class="btn btn-primary btn-sm" @click="moveToCart(it)">🛒 {{ t('add_to_cart') }}</button>
+            <button class="btn btn-primary btn-sm" @click="moveToCart(it)"><base-icon name="cart" :size="14"></base-icon> {{ t('add_to_cart') }}</button>
             <button class="btn btn-ghost btn-sm" @click="remove(it)">{{ t('delete') }}</button>
           </div>
         </div>
@@ -63,7 +63,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;

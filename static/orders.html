@@ -12,7 +12,7 @@
     <main-nav active="orders"></main-nav>
 
     <div class="container">
-      <h1 class="page-title">📦 {{ t('orders') }}</h1>
+      <h1 class="page-title"><base-icon name="box" :size="26"></base-icon> {{ t('orders') }}</h1>
 
       <div class="loading" v-if="loading">
         <div class="spinner"></div>{{ t('loading') }}
@@ -20,7 +20,7 @@
 
       <!-- 未登录：登录引导 -->
       <div class="empty" v-else-if="notLoggedIn" style="padding-top:30px">
-        <div class="empty-icon">🔒</div>
+        <div class="empty-icon"><base-icon name="lock" :size="52"></base-icon></div>
         <div>{{ t('need_login') }}</div>
         <div style="font-size:13px;margin-top:6px">{{ t('orders_login_tip') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="doLogin">
@@ -29,7 +29,7 @@
       </div>
 
       <div class="empty" v-else-if="!orders.length" style="padding-top:30px">
-        <div class="empty-icon">📦</div>
+        <div class="empty-icon"><base-icon name="box" :size="52"></base-icon></div>
         <div>{{ t('no_orders') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="goShopping">
           {{ t('go_shopping') }}
@@ -69,12 +69,13 @@
               </span>
             </div>
             <div class="of-actions">
+              <button class="btn btn-outline btn-sm" @click="viewDetail(o)"><base-icon name="chevronRight" :size="14"></base-icon> {{ t('order_detail') }}</button>
               <template v-if="o.status === 'pending'">
-                <button class="btn btn-primary" @click="pay(o)">💳 {{ t('pay_now') }}</button>
+                <button class="btn btn-primary" @click="pay(o)"><base-icon name="card" :size="15"></base-icon> {{ t('pay_now') }}</button>
                 <button class="btn btn-ghost" @click="cancel(o)">{{ t('cancel_order') }}</button>
               </template>
               <template v-else-if="o.status === 'shipped'">
-                <button class="btn btn-primary" @click="confirm(o)">✅ {{ t('confirm_receipt') }}</button>
+                <button class="btn btn-primary" @click="confirm(o)"><base-icon name="check" :size="15"></base-icon> {{ t('confirm_receipt') }}</button>
               </template>
             </div>
           </div>
@@ -87,7 +88,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -159,6 +160,10 @@
 
           function goShopping() { location.href = '/'; }
 
+          function viewDetail(o) {
+            location.href = '/order-detail.html?order_no=' + encodeURIComponent(o.order_no);
+          }
+
           function doLogin() { PyMall.openAuth('login'); }
 
           Vue.onMounted(load);
@@ -169,7 +174,7 @@
             loading: Vue.computed(function () { return state.loading; }),
             notLoggedIn: Vue.computed(function () { return state.notLoggedIn; }),
             formatTime: formatTime,
-            pay: pay, cancel: cancel, confirm: confirm,
+            pay: pay, cancel: cancel, confirm: confirm, viewDetail: viewDetail,
             goShopping: goShopping, doLogin: doLogin,
           };
         },

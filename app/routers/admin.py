@@ -13,6 +13,7 @@ from app.database import get_db
 from app.deps import require_admin
 from app.i18n import get_lang
 from app.models import (
+    Address,
     AdminUser,
     AdminRole,
     Category,
@@ -25,10 +26,16 @@ from app.models import (
     ReviewStatus,
     SKU,
     StockMovement,
+    WishlistItem,
+    CartItem,
 )
 from app.schemas import (
+    AdminCustomerOut,
     AdminLoginIn,
     AdminTokenOut,
+    AdminUserIn,
+    AdminUserOut,
+    AdminUserUpdateIn,
     CategoryOut,
     DashboardOut,
     Message,
@@ -119,7 +126,7 @@ async def admin_list_products(
 @router.post("/products", response_model=ProductOut, status_code=201)
 async def admin_create_product(
     payload: ProductCreateIn,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """新增商品（使用 Pydantic 校验，避免裸 dict 传入非法字段导致 Decimal 异常）"""
@@ -172,7 +179,7 @@ async def admin_create_product(
 async def admin_update_product(
     product_id: int,
     payload: ProductUpdateIn,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """更新商品（文字/图片/价格/状态等；None 字段表示不修改）"""
@@ -225,7 +232,7 @@ async def admin_update_product(
 async def admin_add_sku(
     product_id: int,
     payload: SKUIn,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """为商品新增 SKU"""
@@ -251,7 +258,7 @@ async def admin_add_sku(
 async def admin_update_stock(
     sku_id: int,
     payload: dict,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """调整 SKU 库存"""
@@ -285,7 +292,9 @@ async def admin_list_orders(
     db: AsyncSession = Depends(get_db),
 ):
     """订单列表（后台）"""
-    stmt = select(Order).options(selectinload(Order.items)).order_by(Order.id.desc())
+    stmt = select(Order).options(
+        selectinload(Order.items), selectinload(Order.payments)
+    ).order_by(Order.id.desc())
     if status and status in OrderStatus._value2member_map_:
         stmt = stmt.where(Order.status == OrderStatus(status))
     result = await db.execute(stmt)
@@ -295,7 +304,7 @@ async def admin_list_orders(
 @router.post("/orders/{order_no}/ship", response_model=Message)
 async def admin_ship_order(
     order_no: str,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """发货"""
@@ -324,7 +333,7 @@ async def admin_list_categories(
 @router.post("/categories", response_model=CategoryOut, status_code=201)
 async def admin_create_category(
     payload: dict,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     cat = Category(
@@ -395,7 +404,7 @@ async def admin_list_reviews(
 async def moderate_review(
     review_id: int,
     payload: dict,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
     """审核评价：approved 通过 / rejected 拒绝"""
@@ -410,3 +419,236 @@ async def moderate_review(
     review.status = ReviewStatus(new_status)
     await db.commit()
     return {"id": review.id, "status": review.status.value}
+
+
+# ============ 客户管理（1000） ============
+@router.get("/customers", response_model=list[AdminCustomerOut])
+async def admin_list_customers(
+    q: str | None = None,
+    admin: AdminUser = Depends(require_admin()),
+    db: AsyncSession = Depends(get_db),
+):
+    """客户列表（含订单数、累计消费）"""
+    stmt = select(Customer).order_by(Customer.id.desc())
+    if q:
+        stmt = stmt.where(
+            (Customer.email.ilike(f"%{q}%"))
+            | (Customer.full_name.ilike(f"%{q}%"))
+            | (Customer.phone.ilike(f"%{q}%"))
+        )
+    customers = (await db.execute(stmt)).scalars().all()
+
+    # 统计每个客户的订单数与消费额
+    stats = (
+        await db.execute(
+            select(
+                Customer.id,
+                func.count(Order.id),
+                func.coalesce(func.sum(Order.total_amount), 0),
+            )
+            .outerjoin(Order, Order.customer_id == Customer.id)
+            .where(
+                Order.status.in_([OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.COMPLETED])
+                | Order.status.is_(None)
+            )
+            .group_by(Customer.id)
+        )
+    ).all()
+    stat_map = {cid: (cnt, total) for cid, cnt, total in stats}
+
+    out = []
+    for c in customers:
+        cnt, total = stat_map.get(c.id, (0, Decimal("0")))
+        item = AdminCustomerOut.model_validate(c)
+        item.orders_count = int(cnt)
+        item.total_spent = total or Decimal("0")
+        out.append(item)
+    return out
+
+
+@router.put("/customers/{customer_id}/status", response_model=AdminCustomerOut)
+async def admin_toggle_customer(
+    customer_id: int,
+    payload: dict,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """启用/禁用客户账号"""
+    result = await db.execute(select(Customer).where(Customer.id == customer_id))
+    customer = result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="客户不存在")
+    is_active = payload.get("is_active")
+    if not isinstance(is_active, bool):
+        raise HTTPException(status_code=400, detail="is_active 必须为布尔值")
+    customer.is_active = is_active
+    await db.commit()
+    await db.refresh(customer)
+    item = AdminCustomerOut.model_validate(customer)
+    item.orders_count = 0
+    item.total_spent = Decimal("0")
+    return item
+
+
+@router.delete("/customers/{customer_id}", response_model=Message)
+async def admin_delete_customer(
+    customer_id: int,
+    admin: AdminUser = Depends(require_admin({"superadmin"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """删除客户（级联清理其购物车、收藏、地址、评价）"""
+    result = await db.execute(select(Customer).where(Customer.id == customer_id))
+    customer = result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="客户不存在")
+    # 订单表外键为 SET NULL，删除客户不会删除订单，先手工解除（保留订单记录）
+    await db.execute(
+        CartItem.__table__.delete().where(CartItem.customer_id == customer_id)
+    )
+    await db.execute(
+        WishlistItem.__table__.delete().where(WishlistItem.customer_id == customer_id)
+    )
+    await db.execute(
+        Address.__table__.delete().where(Address.customer_id == customer_id)
+    )
+    await db.execute(
+        Review.__table__.delete().where(Review.customer_id == customer_id)
+    )
+    await db.execute(
+        Order.__table__.update().where(Order.customer_id == customer_id).values(customer_id=None)
+    )
+    await db.delete(customer)
+    await db.commit()
+    return Message(message="客户已删除")
+
+
+# ============ 商品删除 ============
+@router.delete("/products/{product_id}", response_model=Message)
+async def admin_delete_product(
+    product_id: int,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """删除商品（级联删除 SKU、库存流水等）"""
+    result = await db.execute(
+        select(Product).options(selectinload(Product.skus)).where(Product.id == product_id)
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="商品不存在")
+    # 检查订单项引用（订单保存快照不引用商品，但保留友好提示）
+    await db.execute(StockMovement.__table__.delete().where(
+        StockMovement.sku_id.in_([s.id for s in product.skus])
+    ))
+    await db.delete(product)
+    await db.commit()
+    return Message(message="商品已删除")
+
+
+# ============ 订单详情 ============
+@router.get("/orders/{order_no}", response_model=OrderOut)
+async def admin_order_detail(
+    order_no: str,
+    request: Request,
+    admin: AdminUser = Depends(require_admin()),
+    db: AsyncSession = Depends(get_db),
+):
+    """订单详情（后台）"""
+    result = await db.execute(
+        select(Order)
+        .options(
+            selectinload(Order.items),
+            selectinload(Order.payments),
+            selectinload(Order.customer),
+        )
+        .where(Order.order_no == order_no)
+    )
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="订单不存在")
+    return _order_to_out(order, get_lang(request))
+
+
+# ============ 管理员账号管理（仅 superadmin） ============
+@router.get("/admins", response_model=list[AdminUserOut])
+async def admin_list_admins(
+    admin: AdminUser = Depends(require_admin({"superadmin"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """管理员列表（超管专属）"""
+    result = await db.execute(select(AdminUser).order_by(AdminUser.id))
+    return result.scalars().all()
+
+
+@router.post("/admins", response_model=AdminUserOut, status_code=201)
+async def admin_create_admin(
+    payload: AdminUserIn,
+    admin: AdminUser = Depends(require_admin({"superadmin"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """新增管理员（超管专属）"""
+    if payload.role not in AdminRole._value2member_map_:
+        raise HTTPException(status_code=400, detail="非法角色")
+    existing = await db.execute(select(AdminUser).where(AdminUser.username == payload.username))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="用户名已存在")
+    user = AdminUser(
+        username=payload.username,
+        password_hash=hash_password(payload.password),
+        full_name=payload.full_name,
+        role=AdminRole(payload.role),
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@router.put("/admins/{admin_id}", response_model=AdminUserOut)
+async def admin_update_admin(
+    admin_id: int,
+    payload: AdminUserUpdateIn,
+    current: AdminUser = Depends(require_admin({"superadmin"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """修改管理员（角色/姓名/状态/重置密码），超管专属且不能禁用自己的超管"""
+    result = await db.execute(select(AdminUser).where(AdminUser.id == admin_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="管理员不存在")
+
+    if payload.full_name is not None:
+        user.full_name = payload.full_name
+    if payload.role is not None:
+        if payload.role not in AdminRole._value2member_map_:
+            raise HTTPException(status_code=400, detail="非法角色")
+        user.role = AdminRole(payload.role)
+    if payload.is_active is not None:
+        # 防止把自己的超管账号禁用
+        if user.id == current.id and not payload.is_active:
+            raise HTTPException(status_code=400, detail="不能禁用当前登录的超管账号")
+        user.is_active = payload.is_active
+    if payload.password:
+        user.password_hash = hash_password(payload.password)
+
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+
+@router.delete("/admins/{admin_id}", response_model=Message)
+async def admin_delete_admin(
+    admin_id: int,
+    current: AdminUser = Depends(require_admin({"superadmin"})),
+    db: AsyncSession = Depends(get_db),
+):
+    """删除管理员（不能删除自己）"""
+    if admin_id == current.id:
+        raise HTTPException(status_code=400, detail="不能删除当前登录账号")
+    result = await db.execute(select(AdminUser).where(AdminUser.id == admin_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="管理员不存在")
+    await db.delete(user)
+    await db.commit()
+    return Message(message="管理员已删除")

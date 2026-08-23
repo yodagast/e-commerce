@@ -2,7 +2,7 @@
 
 覆盖 :mod:`app.routers` 下所有公开接口：
 - 公共接口：健康检查、分类、商品列表/详情/搜索
-- 认证接口：注册、登录、当前用户
+- 认证接口：注册（邮箱验证码）、登录、当前用户
 - 购物车接口：查/加/改/删/清空
 - 订单接口：下单、订单列表/详情、支付、取消、确认收货
 - 后台接口：管理员登录、仪表盘、商品管理、SKU/库存、订单管理、分类、库存流水
@@ -12,10 +12,15 @@
 """
 from __future__ import annotations
 
+import os
+import subprocess
 import time
+from urllib.parse import urlparse
 
 import pytest
 import requests
+
+from app.config import settings
 
 BASE = "http://127.0.0.1:8010"
 H = {"Accept-Language": "zh"}
@@ -28,14 +33,64 @@ ADMIN_PASS = "admin123"
 ts = int(time.time())
 TEST_EMAIL = f"test_{ts}@example.com"
 
+# 数据库连接参数（psql 子进程读取验证码，避免 async 引擎事件循环冲突）
+_DB_URL = urlparse(settings.DATABASE_URL)
+_PSQL_ENV = {
+    **os.environ,
+    "PGHOST": _DB_URL.hostname or "localhost",
+    "PGPORT": str(_DB_URL.port or 5432),
+    "PGUSER": _DB_URL.username or "",
+    "PGDATABASE": (_DB_URL.path or "/").lstrip("/"),
+    "PGPASSWORD": _DB_URL.password or "",
+}
+
+
+def get_latest_code(email: str, purpose: str | None = None) -> str:
+    """从数据库读取该邮箱最新未使用的验证码（psql 子进程，避免事件循环冲突）"""
+    where = f"WHERE email = '{email.lower()}'"
+    if purpose:
+        where += f" AND purpose = '{purpose}'"
+    sql = f"SELECT code FROM email_verify_codes {where} ORDER BY id DESC LIMIT 1;"
+    res = subprocess.run(
+        ["psql", "-t", "-A", "-c", sql],
+        capture_output=True, text=True, env=_PSQL_ENV,
+    )
+    return res.stdout.strip()
+
+
+def send_verify_code(email: str, purpose: str = "register") -> requests.Response:
+    """请求发送邮箱验证码"""
+    return requests.post(
+        f"{BASE}/api/auth/send-code",
+        json={"email": email, "purpose": purpose},
+    )
+
+
+def register_user(email: str, password: str = "test12345") -> requests.Response:
+    """完整注册流程：发送验证码 → 读取 → 注册"""
+    send_verify_code(email)
+    code = get_latest_code(email)
+    return requests.post(
+        f"{BASE}/api/auth/register",
+        json={"email": email, "password": password, "full_name": "测试用户", "code": code},
+    )
+
 
 # ---------- fixtures ----------
+@pytest.fixture(scope="module", autouse=True)
+def buyer_setup():
+    """确保 buyer 测试账号在首个测试运行前已存在（避免测试顺序依赖）"""
+    r = requests.post(f"{BASE}/api/auth/login", json={"email": BUYER_EMAIL, "password": BUYER_PASS})
+    if r.status_code != 200:
+        rr = register_user(BUYER_EMAIL, BUYER_PASS)
+        assert rr.status_code in (200, 201), rr.text
+
+
 @pytest.fixture(scope="module")
-def buyer_token():
+def buyer_token(buyer_setup):
     r = requests.post(f"{BASE}/api/auth/login", json={"email": BUYER_EMAIL, "password": BUYER_PASS})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['access_token']}", **H}
-
 
 @pytest.fixture(scope="module")
 def admin_token():
@@ -115,16 +170,73 @@ class TestPublic:
         assert r.status_code == 404
 
 
+# ---------- 订阅 ----------
+class TestNewsletter:
+    def test_subscribe(self):
+        email = f"sub_{ts}@example.com"
+        r = requests.post(f"{BASE}/api/subscribe", json={"email": email})
+        assert r.status_code == 201, r.text
+        assert r.json()["message"]
+
+    def test_subscribe_duplicate(self):
+        email = f"sub_{ts}@example.com"
+        r = requests.post(f"{BASE}/api/subscribe", json={"email": email})
+        assert r.status_code in (200, 201)
+
+    def test_subscribe_invalid_email(self):
+        r = requests.post(f"{BASE}/api/subscribe", json={"email": "bad-email"})
+        assert r.status_code == 422
+
+    def test_admin_list_subscribers(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/subscribers", headers=admin_token)
+        assert r.status_code == 200
+        subscribers = r.json()
+        assert isinstance(subscribers, list)
+        assert any(s["email"] == f"sub_{ts}@example.com" for s in subscribers)
+
+    def test_admin_delete_subscriber(self, admin_token):
+        email = f"sub_del_{ts}@example.com"
+        requests.post(f"{BASE}/api/subscribe", json={"email": email})
+        subs = requests.get(f"{BASE}/api/admin/subscribers", headers=admin_token).json()
+        target = next((s for s in subs if s["email"] == email), None)
+        if target:
+            r = requests.delete(f"{BASE}/api/admin/subscribers/{target['id']}", headers=admin_token)
+            assert r.status_code == 200
+
+
 # ---------- 认证接口 ----------
 class TestAuth:
-    def test_register(self):
+    def test_send_code(self):
+        r = send_verify_code(f"code_{ts}@example.com")
+        assert r.status_code == 200, r.text
+        assert r.json()["message"]
+
+    def test_send_code_existing_email(self):
+        r = send_verify_code(BUYER_EMAIL)
+        assert r.status_code == 409
+
+    def test_register_requires_code(self):
         payload = {"email": TEST_EMAIL, "password": "test123", "full_name": "测试用户"}
+        r = requests.post(f"{BASE}/api/auth/register", json=payload)
+        assert r.status_code == 400, r.text
+
+    def test_register_wrong_code(self):
+        send_verify_code(TEST_EMAIL)
+        payload = {"email": TEST_EMAIL, "password": "test123", "full_name": "测试用户", "code": "000000"}
+        r = requests.post(f"{BASE}/api/auth/register", json=payload)
+        assert r.status_code == 400, r.text
+
+    def test_register(self):
+        send_verify_code(TEST_EMAIL)
+        code = get_latest_code(TEST_EMAIL)
+        assert code, "验证码未写入数据库"
+        payload = {"email": TEST_EMAIL, "password": "test123", "full_name": "测试用户", "code": code}
         r = requests.post(f"{BASE}/api/auth/register", json=payload)
         assert r.status_code == 201, r.text
         assert "access_token" in r.json()
 
     def test_register_duplicate(self):
-        payload = {"email": BUYER_EMAIL, "password": "whatever123"}
+        payload = {"email": BUYER_EMAIL, "password": "whatever123", "code": "000000"}
         r = requests.post(f"{BASE}/api/auth/register", json=payload)
         assert r.status_code == 409
 
@@ -149,6 +261,45 @@ class TestAuth:
     def test_me_unauthorized(self):
         r = requests.get(f"{BASE}/api/auth/me")
         assert r.status_code == 401
+
+    # ---------- 重置密码 ----------
+    def test_reset_send_code_unknown_email(self):
+        r = send_verify_code(f"nobody_{ts}@example.com", purpose="reset")
+        assert r.status_code == 404
+
+    def test_reset_password_wrong_code(self):
+        send_verify_code(TEST_EMAIL, purpose="reset")
+        r = requests.post(f"{BASE}/api/auth/reset-password",
+                          json={"email": TEST_EMAIL, "code": "000000", "new_password": "newpass123"})
+        assert r.status_code == 400
+
+    def test_reset_password_flow(self):
+        # 使用 TEST_EMAIL 注册的账号（test_register 已创建）
+        send_verify_code(TEST_EMAIL, purpose="reset")
+        code = get_latest_code(TEST_EMAIL, purpose="reset")
+        assert code, "reset 验证码未写入"
+        r = requests.post(f"{BASE}/api/auth/reset-password",
+                          json={"email": TEST_EMAIL, "code": code, "new_password": "resetpass123"})
+        assert r.status_code == 200, r.text
+        # 新密码可登录
+        login_ok = requests.post(f"{BASE}/api/auth/login",
+                                 json={"email": TEST_EMAIL, "password": "resetpass123"})
+        assert login_ok.status_code == 200
+        # 旧密码失效
+        login_old = requests.post(f"{BASE}/api/auth/login",
+                                  json={"email": TEST_EMAIL, "password": "test123"})
+        assert login_old.status_code == 401
+
+    def test_reset_password_reuse_code(self):
+        # 验证码只能使用一次
+        send_verify_code(TEST_EMAIL, purpose="reset")
+        code = get_latest_code(TEST_EMAIL, purpose="reset")
+        r1 = requests.post(f"{BASE}/api/auth/reset-password",
+                           json={"email": TEST_EMAIL, "code": code, "new_password": "againpass123"})
+        assert r1.status_code == 200
+        r2 = requests.post(f"{BASE}/api/auth/reset-password",
+                           json={"email": TEST_EMAIL, "code": code, "new_password": "hackpass123"})
+        assert r2.status_code == 400
 
 
 # ---------- 购物车接口 ----------
@@ -398,8 +549,7 @@ class TestReviews:
     def _new_user_token(self):
         """注册一个全新的临时用户（避免历史购买/评价数据干扰）"""
         email = f"rv_{ts}_{int(time.time()*1000)}@example.com"
-        r = requests.post(f"{BASE}/api/auth/register",
-                          json={"email": email, "password": "test123", "full_name": "评价测试"})
+        r = register_user(email)
         assert r.status_code == 201, r.text
         return {"Authorization": f"Bearer {r.json()['access_token']}", **H}
 
@@ -705,3 +855,95 @@ class TestAdmin:
     def test_admin_ship_unknown_order(self, admin_token):
         r = requests.post(f"{BASE}/api/admin/orders/ORD_NOT_EXIST/ship", headers=admin_token)
         assert r.status_code == 404
+
+    # ---------- 用户管理 ----------
+    def test_admin_list_customers(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/customers", headers=admin_token)
+        assert r.status_code == 200
+        customers = r.json()
+        assert isinstance(customers, list)
+        # buyer 用户应存在且含统计字段
+        buyer = next((c for c in customers if c["email"] == BUYER_EMAIL), None)
+        if buyer:
+            for key in ("orders_count", "total_spent", "is_active"):
+                assert key in buyer
+
+    def test_admin_customers_search(self, admin_token):
+        r = requests.get(f"{BASE}/api/admin/customers", params={"q": BUYER_EMAIL}, headers=admin_token)
+        assert r.status_code == 200
+        assert any(c["email"] == BUYER_EMAIL for c in r.json())
+
+    def test_admin_toggle_customer(self, admin_token):
+        # 先查 buyer id
+        customers = requests.get(f"{BASE}/api/admin/customers", params={"q": BUYER_EMAIL}, headers=admin_token).json()
+        buyer = next((c for c in customers if c["email"] == BUYER_EMAIL), None)
+        if not buyer:
+            pytest.skip("buyer 用户不存在")
+        cid = buyer["id"]
+        # 禁用
+        r = requests.put(f"{BASE}/api/admin/customers/{cid}/status",
+                         json={"is_active": False}, headers=admin_token)
+        assert r.status_code == 200, r.text
+        assert r.json()["is_active"] is False
+        # 恢复
+        r2 = requests.put(f"{BASE}/api/admin/customers/{cid}/status",
+                          json={"is_active": True}, headers=admin_token)
+        assert r2.status_code == 200
+        assert r2.json()["is_active"] is True
+
+    # ---------- 商品删除 ----------
+    def test_admin_delete_product(self, admin_token):
+        sku_code = f"PYTEST-DEL-{ts}"
+        payload = {
+            "sku_code": sku_code,
+            "name_zh": "待删除商品",
+            "base_price": "9.99",
+            "skus": [{"sku_code": f"{sku_code}-S", "price": "9.99", "stock": 1}],
+        }
+        created = requests.post(f"{BASE}/api/admin/products", json=payload, headers=admin_token)
+        assert created.status_code == 201, created.text
+        pid = created.json()["id"]
+        r = requests.delete(f"{BASE}/api/admin/products/{pid}", headers=admin_token)
+        assert r.status_code == 200, r.text
+        r2 = requests.delete(f"{BASE}/api/admin/products/{pid}", headers=admin_token)
+        assert r2.status_code == 404
+
+    # ---------- 管理员账号管理 + 权限 ----------
+    def test_admin_manage_admins(self, admin_token):
+        uname = f"ptest_{ts}"
+        payload = {"username": uname, "password": "pass123456", "full_name": "测试管理员", "role": "operator"}
+        r = requests.post(f"{BASE}/api/admin/admins", json=payload, headers=admin_token)
+        assert r.status_code == 201, r.text
+        aid = r.json()["id"]
+        # 列表包含
+        admins = requests.get(f"{BASE}/api/admin/admins", headers=admin_token).json()
+        assert any(a["id"] == aid for a in admins)
+        # 改角色
+        r2 = requests.put(f"{BASE}/api/admin/admins/{aid}", json={"role": "viewer"}, headers=admin_token)
+        assert r2.status_code == 200
+        assert r2.json()["role"] == "viewer"
+        # 删除
+        r3 = requests.delete(f"{BASE}/api/admin/admins/{aid}", headers=admin_token)
+        assert r3.status_code == 200
+
+    def test_admin_role_permission_viewer_readonly(self, admin_token):
+        # 创建 viewer 并登录，验证只读
+        uname = f"ptest_v_{ts}"
+        requests.post(f"{BASE}/api/admin/admins",
+                      json={"username": uname, "password": "pass123456", "role": "viewer"}, headers=admin_token)
+        login = requests.post(f"{BASE}/api/admin/login", json={"username": uname, "password": "pass123456"})
+        assert login.status_code == 200
+        vtoken = {"Authorization": f"Bearer {login.json()['access_token']}", **H}
+        # 读操作允许
+        assert requests.get(f"{BASE}/api/admin/products", headers=vtoken).status_code == 200
+        # 写操作禁止
+        r = requests.post(f"{BASE}/api/admin/products",
+                          json={"sku_code": "NO-PERM", "name_zh": "x", "base_price": 1}, headers=vtoken)
+        assert r.status_code == 403
+        # 管理员列表禁止
+        assert requests.get(f"{BASE}/api/admin/admins", headers=vtoken).status_code == 403
+        # 清理
+        admins = requests.get(f"{BASE}/api/admin/admins", headers=admin_token).json()
+        for a in admins:
+            if a["username"] == uname:
+                requests.delete(f"{BASE}/api/admin/admins/{a['id']}", headers=admin_token)

@@ -58,6 +58,18 @@ def _order_to_out(order: Order, lang: str) -> OrderOut:
                 subtotal=it.subtotal,
             )
         )
+    payments = []
+    for p in order.payments:
+        payments.append(
+            PaymentOut(
+                transaction_no=p.transaction_no,
+                method=p.method.value if hasattr(p.method, "value") else str(p.method),
+                amount=p.amount,
+                currency=p.currency,
+                status=p.status.value if hasattr(p.status, "value") else str(p.status),
+                gateway_response=p.gateway_response or {},
+            )
+        )
     return OrderOut(
         id=order.id,
         order_no=order.order_no,
@@ -75,6 +87,7 @@ def _order_to_out(order: Order, lang: str) -> OrderOut:
         paid_at=order.paid_at,
         shipped_at=order.shipped_at,
         items=items,
+        payments=payments,
     )
 
 
@@ -267,7 +280,7 @@ async def list_orders(
     """我的订单列表"""
     result = await db.execute(
         select(Order)
-        .options(selectinload(Order.items))
+        .options(selectinload(Order.items), selectinload(Order.payments))
         .where(Order.customer_id == customer.id)
         .order_by(Order.id.desc())
     )
@@ -285,7 +298,7 @@ async def order_detail(
     """订单详情"""
     result = await db.execute(
         select(Order)
-        .options(selectinload(Order.items))
+        .options(selectinload(Order.items), selectinload(Order.payments))
         .where(Order.order_no == order_no, Order.customer_id == customer.id)
     )
     order = result.scalar_one_or_none()

@@ -20,18 +20,18 @@
           <div class="hero-tag">{{ slide.tag }}</div>
           <h1>{{ slide.title }}</h1>
           <p class="sub">{{ slide.sub }}</p>
-          <button class="btn-hero" @click="goProducts">🛍️ {{ t('shop_now') }}</button>
+          <button class="btn-hero" @click="goProducts"><base-icon name="bag" :size="18"></base-icon> {{ t('shop_now') }}</button>
         </div>
         <div class="hero-visual">
           <div class="hero-img-wrap">
             <img :src="slide.img" :alt="slide.title">
           </div>
           <div class="hero-float f1">
-            <span class="fi">🚚</span>
+            <span class="fi"><base-icon name="truck" :size="20"></base-icon></span>
             <div><div class="ft">{{ t('free_ship') }}</div><div class="fd">{{ t('free_ship_desc') }}</div></div>
           </div>
           <div class="hero-float f2">
-            <span class="fi">🏷️</span>
+            <span class="fi"><base-icon name="tag" :size="18"></base-icon></span>
             <div><div class="ft">-50%</div><div class="fd">NEW SEASON</div></div>
           </div>
         </div>
@@ -45,10 +45,10 @@
     <!-- 服务保障条 -->
     <div class="benefits">
       <div class="benefits-inner">
-        <div class="benefit"><span class="bi">🚚</span><div><div class="bt">{{ t('free_ship') }}</div><div class="bd">{{ t('free_ship_desc') }}</div></div></div>
-        <div class="benefit"><span class="bi">🔒</span><div><div class="bt">{{ t('safe_pay') }}</div><div class="bd">{{ t('safe_pay_desc') }}</div></div></div>
-        <div class="benefit"><span class="bi">↩️</span><div><div class="bt">{{ t('easy_return') }}</div><div class="bd">{{ t('easy_return_desc') }}</div></div></div>
-        <div class="benefit"><span class="bi">💬</span><div><div class="bt">{{ t('support') }}</div><div class="bd">{{ t('support_desc') }}</div></div></div>
+        <div class="benefit"><span class="bi"><base-icon name="truck" :size="22"></base-icon></span><div><div class="bt">{{ t('free_ship') }}</div><div class="bd">{{ t('free_ship_desc') }}</div></div></div>
+        <div class="benefit"><span class="bi"><base-icon name="shield" :size="22"></base-icon></span><div><div class="bt">{{ t('safe_pay') }}</div><div class="bd">{{ t('safe_pay_desc') }}</div></div></div>
+        <div class="benefit"><span class="bi"><base-icon name="refresh" :size="22"></base-icon></span><div><div class="bt">{{ t('easy_return') }}</div><div class="bd">{{ t('easy_return_desc') }}</div></div></div>
+        <div class="benefit"><span class="bi"><base-icon name="review" :size="22"></base-icon></span><div><div class="bt">{{ t('support') }}</div><div class="bd">{{ t('support_desc') }}</div></div></div>
       </div>
     </div>
 
@@ -84,8 +84,6 @@
               <img :src="p.main_image || 'https://picsum.photos/seed/' + p.id + '/600/400'"
                    loading="lazy" :onerror="'this.src=&quot;https://picsum.photos/seed/' + p.id + '/600/400&quot;'">
               <div class="product-tag" v-if="p.is_featured">HOT</div>
-              <button class="heart-btn" :class="{active: isWished(p.id)}"
-                      @click.stop.prevent="toggleWish(p)">♥</button>
             </div>
             <div class="body">
               <div class="name">{{ p.display_name || p.sku_code }}</div>
@@ -93,8 +91,12 @@
                 <span class="price">{{ money(p.base_price) }}</span>
               </div>
               <div class="meta">
-                <span>🔥 {{ t('sold') }} {{ p.sales_count || 0 }}</span>
-                <span class="buy-link" @click.stop.prevent="buyNow(p)">⚡ {{ t('buy_now') }}</span>
+                <span><base-icon name="fire" :size="13"></base-icon> {{ t('sold') }} {{ p.sales_count || 0 }}</span>
+                <span class="product-actions">
+                  <button class="fav-star" :class="{active: isWished(p.id)}"
+                          @click.stop.prevent="toggleWish(p)" :title="t('wishlist')"><base-icon name="star" :size="15" :fill="isWished(p.id)"></base-icon></button>
+                  <span class="buy-link" @click.stop.prevent="buyNow(p)"><base-icon name="zap" :size="13"></base-icon> {{ t('buy_now') }}</span>
+                </span>
               </div>
             </div>
           </div>
@@ -103,7 +105,7 @@
           <div class="spinner"></div>{{ t('loading') }}
         </div>
         <div style="text-align:center;margin-top:26px">
-          <button class="btn btn-dark btn-lg" @click="goProducts">{{ t('all_products') }} →</button>
+          <button class="btn btn-dark btn-lg" @click="goProducts">{{ t('all_products') }} <base-icon name="chevronRight" :size="16"></base-icon></button>
         </div>
       </div>
     </section>
@@ -116,7 +118,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;

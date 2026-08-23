@@ -11,6 +11,18 @@ class Settings(BaseSettings):
     # 数据库连接（asyncpg 异步驱动）
     DATABASE_URL: str = "postgresql+asyncpg://huangyong@localhost:5432/ecommerce"
 
+    # 邮箱验证码 / SMTP（用于注册邮箱验证）
+    EMAIL_CODE_EXPIRE_MINUTES: int = 10
+    EMAIL_CODE_LENGTH: int = 6
+    SMTP_HOST: str = "localhost"
+    SMTP_PORT: int = 25
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "noreply@pymall.local"
+    SMTP_FROM_NAME: str = "PyMall 电商"
+    SMTP_USE_SSL: bool = False
+    SMTP_USE_TLS: bool = False
+
     # 安全
     SECRET_KEY: str = "pythonshop-dev-secret-key-change-me"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7

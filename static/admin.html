@@ -18,11 +18,14 @@
 
   <div id="admin-app" class="admin-layout hidden">
     <aside class="admin-sidebar">
-      <div class="logo">🐍 ERP</div>
-      <a href="javascript:void(0)" data-view="dashboard" class="active">仪表盘</a>
-      <a href="javascript:void(0)" data-view="products">商品管理</a>
-      <a href="javascript:void(0)" data-view="orders">订单管理</a>
-      <a href="javascript:void(0)" id="admin-logout">退出登录</a>
+      <div class="logo"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> ERP<small id="admin-role-tag"></small></div>
+      <a href="javascript:void(0)" data-view="dashboard" class="active"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="12" y="6" width="3" height="12"/><rect x="17" y="13" width="3" height="5"/></svg>仪表盘</a>
+      <a href="javascript:void(0)" data-view="products"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>商品管理</a>
+      <a href="javascript:void(0)" data-view="orders"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>订单管理</a>
+      <a href="javascript:void(0)" data-view="customers"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>用户管理</a>
+      <a href="javascript:void(0)" data-view="newsletter"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>订阅管理</a>
+      <a href="javascript:void(0)" data-view="admins" id="nav-admins" class="hidden"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>管理员权限</a>
+      <a href="javascript:void(0)" id="admin-logout" class="nav-logout"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>退出登录</a>
     </aside>
     <main class="admin-main">
       <div id="view-dashboard">
@@ -40,10 +43,47 @@
         <h2 style="margin-bottom:16px">订单管理</h2>
         <div id="order-table"></div>
       </div>
+      <div id="view-customers" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2>用户管理</h2>
+          <input type="text" id="customer-search" placeholder="按邮箱/姓名/电话搜索..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:260px">
+        </div>
+        <div id="customer-table"></div>
+      </div>
+      <div id="view-newsletter" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <h2>订阅管理</h2>
+        </div>
+        <!-- 群发邮件表单 -->
+        <div class="card" style="padding:16px;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+          <h3 style="margin-bottom:12px">群发优惠邮件</h3>
+          <div class="form-group">
+            <label>邮件主题</label>
+            <input type="text" id="newsletter-subject" placeholder="请输入邮件主题" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>邮件内容</label>
+            <textarea id="newsletter-content" rows="4" placeholder="请输入邮件正文内容" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="btn btn-primary" id="send-newsletter-btn">发送群发邮件</button>
+            <span id="subscriber-count" style="font-size:13px;color:#64748b"></span>
+          </div>
+        </div>
+        <!-- 订阅者列表 -->
+        <div id="subscriber-table"></div>
+      </div>
+      <div id="view-admins" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2>管理员权限</h2>
+          <button class="btn btn-primary" id="add-admin-btn">新增管理员</button>
+        </div>
+        <div id="admin-table"></div>
+      </div>
     </main>
   </div>
 
-  <script src="/static/js/common.js"></script>
+  <script src="/static/js/common.js?v=6"></script>
   <script>
     (function () {
       var App = window.App;
@@ -71,13 +111,40 @@
         api('/api/admin/login', { method: 'POST', body: { username: u, password: p } })
           .then(function (d) {
             adminToken = d.access_token;
+            adminRole = d.role;
             App.setAdminToken(d.access_token);
+            localStorage.setItem('admin_role', d.role);
+            localStorage.setItem('admin_username', d.username);
+            meUsername = d.username;
             showApp();
+            applyRoleUI();
             loadDashboard();
             loadProducts();
             loadOrders();
+            loadCustomers();
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      // ---------- 角色控制 ----------
+      var adminRole = localStorage.getItem('admin_role') || '';
+      var ROLE_LABEL = { superadmin: '超级管理员', operator: '运营', viewer: '只读' };
+
+      function applyRoleUI() {
+        document.getElementById('admin-role-tag').textContent = ROLE_LABEL[adminRole] || adminRole;
+        var canWrite = adminRole === 'superadmin' || adminRole === 'operator';
+        var isSuper = adminRole === 'superadmin';
+        // 管理员权限入口仅超管可见
+        document.getElementById('nav-admins').classList.toggle('hidden', !isSuper);
+        // 写操作按钮仅可写角色可见
+        var addBtn = document.getElementById('add-product-btn');
+        if (addBtn) addBtn.style.display = canWrite ? '' : 'none';
+        document.querySelectorAll('[data-need-write]').forEach(function (el) {
+          el.style.display = canWrite ? '' : 'none';
+        });
+        document.querySelectorAll('[data-need-super]').forEach(function (el) {
+          el.style.display = isSuper ? '' : 'none';
+        });
       }
 
       function loadDashboard() {
@@ -97,18 +164,26 @@
       function loadProducts() {
         api('/api/admin/products')
           .then(function (list) {
+            var canWrite = adminRole === 'superadmin' || adminRole === 'operator';
             var rows = list.map(function (p) {
               var skus = (p.skus || []).map(function (s) {
+                var stockInp = canWrite
+                  ? '<input type="number" value="' + s.stock + '" onchange="Admin.stock(' + s.id + ',this.value)" style="width:80px" data-need-write>'
+                  : s.stock;
                 return '<tr><td>' + s.sku_code + '</td><td>' + App.money(s.price) + '</td>'
-                  + '<td><input type="number" value="' + s.stock + '" onchange="Admin.stock(' + s.id + ',this.value)" style="width:80px"></td>'
+                  + '<td>' + stockInp + '</td>'
                   + '<td>' + (s.available_stock) + '</td></tr>';
               }).join('');
+              var delBtn = canWrite
+                ? '<button class="btn btn-danger btn-sm" onclick="Admin.delProduct(' + p.id + ')">删除</button>' : '';
               return '<tr><td>' + p.id + '</td><td>' + (p.name_i18n.zh || p.sku_code) + '</td><td>' + App.money(p.base_price) + '</td>'
-                + '<td>' + p.status + '</td><td><table class="admin-table" style="margin:0">' + skus + '</table></td></tr>';
+                + '<td>' + p.status + '</td><td><table class="admin-table" style="margin:0">' + skus + '</table></td>'
+                + '<td class="actions-cell">' + delBtn + '</td></tr>';
             }).join('');
             document.getElementById('product-table').innerHTML =
-              '<table class="admin-table"><thead><tr><th>ID</th><th>名称</th><th>基础价</th><th>状态</th><th>SKU</th></tr></thead><tbody>'
-              + (rows || '<tr><td colspan="5">暂无</td></tr>') + '</tbody></table>';
+              '<table class="admin-table"><thead><tr><th>ID</th><th>名称</th><th>基础价</th><th>状态</th><th>SKU</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="6">暂无</td></tr>') + '</tbody></table>';
+            applyRoleUI();
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
       }
@@ -116,12 +191,15 @@
       function loadOrders() {
         api('/api/admin/orders')
           .then(function (list) {
+            var canWrite = adminRole === 'superadmin' || adminRole === 'operator';
             var rows = list.map(function (o) {
-              var shipBtn = o.status === 'paid'
+              var shipBtn = o.status === 'paid' && canWrite
                 ? '<button class="btn btn-primary btn-sm" onclick="Admin.ship(\'' + o.order_no + '\')">发货</button>' : '';
               return '<tr><td>' + o.order_no + '</td><td>' + o.receiver_name + '</td>'
                 + '<td>' + App.money(o.total_amount) + '</td><td>' + App.badge(o.status) + '</td>'
-                + '<td>' + o.created_at + '</td><td>' + shipBtn + '</td></tr>';
+                + '<td>' + o.created_at + '</td><td class="actions-cell">'
+                + '<button class="btn btn-outline btn-sm" onclick="Admin.viewOrder(\'' + o.order_no + '\')">详情</button>'
+                + shipBtn + '</td></tr>';
             }).join('');
             document.getElementById('order-table').innerHTML =
               '<table class="admin-table"><thead><tr><th>订单号</th><th>收货人</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody>'
@@ -130,7 +208,199 @@
           .catch(function (e) { App.toast(e.message, 'error'); });
       }
 
-      function addProduct() {
+      // ---------- 用户管理 ----------
+      function loadCustomers(q) {
+        var url = '/api/admin/customers' + (q ? '?q=' + encodeURIComponent(q) : '');
+        api(url)
+          .then(function (list) {
+            var canWrite = adminRole === 'superadmin' || adminRole === 'operator';
+            var isSuper = adminRole === 'superadmin';
+            var rows = list.map(function (c) {
+              var statusBadge = c.is_active
+                ? '<span class="badge" style="background:#dcfce7;color:#166534">正常</span>'
+                : '<span class="badge" style="background:#fee2e2;color:#991b1b">已禁用</span>';
+              var act = '';
+              if (canWrite) {
+                act += '<button class="btn btn-outline btn-sm" onclick="Admin.toggleCustomer(' + c.id + ',' + (c.is_active ? 'false' : 'true') + ')">'
+                  + (c.is_active ? '禁用' : '启用') + '</button> ';
+              }
+              if (isSuper) {
+                act += '<button class="btn btn-danger btn-sm" onclick="Admin.delCustomer(' + c.id + ')">删除</button>';
+              }
+              return '<tr><td>' + c.id + '</td><td>' + c.email + '</td><td>' + (c.full_name || '-') + '</td>'
+                + '<td>' + (c.phone || '-') + '</td><td>' + c.orders_count + '</td>'
+                + '<td>' + App.money(c.total_spent) + '</td><td>' + statusBadge + '</td>'
+                + '<td class="actions-cell">' + act + '</td></tr>';
+            }).join('');
+            document.getElementById('customer-table').innerHTML =
+              '<table class="admin-table"><thead><tr><th>ID</th><th>邮箱</th><th>姓名</th><th>电话</th><th>订单</th><th>消费</th><th>状态</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="8">暂无用户</td></tr>') + '</tbody></table>';
+            applyRoleUI();
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      // ---------- 管理员管理 ----------
+      var meUsername = localStorage.getItem('admin_username') || '';
+      function loadAdmins() {
+        api('/api/admin/admins')
+          .then(function (list) {
+            var rows = list.map(function (u) {
+              var statusBadge = u.is_active
+                ? '<span class="badge" style="background:#dcfce7;color:#166534">正常</span>'
+                : '<span class="badge" style="background:#fee2e2;color:#991b1b">已禁用</span>';
+              var isMe = u.username === meUsername;
+              var my = isMe ? '（我）' : '';
+              return '<tr><td>' + u.id + '</td><td>' + u.username + my + '</td><td>' + (u.full_name || '-') + '</td>'
+                + '<td>' + (ROLE_LABEL[u.role] || u.role) + '</td><td>' + statusBadge + '</td>'
+                + '<td>' + (u.last_login || '-') + '</td>'
+                + '<td class="actions-cell">'
+                + '<button class="btn btn-outline btn-sm" onclick="Admin.editAdmin(' + u.id + ')">编辑</button> '
+                + (!isMe ? '<button class="btn btn-danger btn-sm" onclick="Admin.delAdmin(' + u.id + ')">删除</button>' : '')
+                + '</td></tr>';
+            }).join('');
+            document.getElementById('admin-table').innerHTML =
+              '<table class="admin-table"><thead><tr><th>ID</th><th>用户名</th><th>姓名</th><th>角色</th><th>状态</th><th>最近登录</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="7">暂无管理员</td></tr>') + '</tbody></table>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function stock(skuId, val) {
+        api('/api/admin/skus/' + skuId + '/stock', { method: 'PUT', body: { stock: Number(val), reason: 'admin_adjust' } })
+          .then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function ship(orderNo) {
+        api('/api/admin/orders/' + orderNo + '/ship', { method: 'POST' })
+          .then(function () { App.toast(t('operation_success'), 'success'); loadOrders(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function delProduct(id) {
+        if (!confirm('确认删除该商品？相关 SKU 与库存流水将一并删除。')) return;
+        api('/api/admin/products/' + id, { method: 'DELETE' })
+          .then(function () { App.toast('商品已删除', 'success'); loadProducts(); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function viewOrder(orderNo) {
+        location.href = '/admin-order-detail.html?order_no=' + encodeURIComponent(orderNo);
+      }
+
+      // ---------- 用户管理操作 ----------
+      function toggleCustomer(id, active) {
+        api('/api/admin/customers/' + id + '/status', { method: 'PUT', body: { is_active: active } })
+          .then(function () { App.toast('操作成功', 'success'); loadCustomers(document.getElementById('customer-search').value); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function delCustomer(id) {
+        if (!confirm('确认删除该用户？其购物车、收藏、地址、评价将一并删除，订单记录保留。')) return;
+        api('/api/admin/customers/' + id, { method: 'DELETE' })
+          .then(function () { App.toast('用户已删除', 'success'); loadCustomers(document.getElementById('customer-search').value); loadDashboard(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      // ---------- 管理员管理操作 ----------
+      function addAdmin() {
+        var username = prompt('用户名');
+        if (!username) return;
+        var fullName = prompt('姓名', '');
+        var password = prompt('初始密码（至少 6 位）');
+        if (!password || password.length < 6) { App.toast('密码至少 6 位', 'error'); return; }
+        var role = prompt('角色（superadmin / operator / viewer）', 'operator');
+        if (role && !['superadmin', 'operator', 'viewer'].includes(role)) { App.toast('非法角色', 'error'); return; }
+        api('/api/admin/admins', {
+          method: 'POST',
+          body: { username: username, password: password, full_name: fullName, role: role || 'operator' },
+        }).then(function () { App.toast('管理员已创建', 'success'); loadAdmins(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function editAdmin(id) {
+        var role = prompt('设置角色（superadmin / operator / viewer）');
+        if (!role) return;
+        if (!['superadmin', 'operator', 'viewer'].includes(role)) { App.toast('非法角色', 'error'); return; }
+        api('/api/admin/admins/' + id, { method: 'PUT', body: { role: role } })
+          .then(function () { App.toast('已更新', 'success'); loadAdmins(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function delAdmin(id) {
+        if (!confirm('确认删除该管理员？')) return;
+        api('/api/admin/admins/' + id, { method: 'DELETE' })
+          .then(function () { App.toast('管理员已删除', 'success'); loadAdmins(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      // ---------- 订阅管理 ----------
+      function loadSubscribers() {
+        api('/api/admin/subscribers')
+          .then(function (list) {
+            document.getElementById('subscriber-count').textContent = '共 ' + (list.length || 0) + ' 位订阅者';
+            var rows = (list || []).map(function (s) {
+              var statusBadge = s.is_active
+                ? '<span class="badge" style="background:#dcfce7;color:#166534">正常</span>'
+                : '<span class="badge" style="background:#fee2e2;color:#991b1b">已退订</span>';
+              return '<tr><td>' + s.id + '</td><td>' + s.email + '</td><td>' + statusBadge + '</td>'
+                + '<td>' + (s.created_at || '') + '</td>'
+                + '<td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="Admin.delSubscriber(' + s.id + ')">删除</button></td></tr>';
+            }).join('');
+            document.getElementById('subscriber-table').innerHTML =
+              '<table class="admin-table"><thead><tr><th>ID</th><th>邮箱</th><th>状态</th><th>订阅时间</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="5">暂无订阅者</td></tr>') + '</tbody></table>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function delSubscriber(id) {
+        if (!confirm('确认删除该订阅者？')) return;
+        api('/api/admin/subscribers/' + id, { method: 'DELETE' })
+          .then(function () { App.toast('已删除', 'success'); loadSubscribers(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function sendNewsletter() {
+        var subject = document.getElementById('newsletter-subject').value.trim();
+        var content = document.getElementById('newsletter-content').value.trim();
+        if (!subject) { App.toast('请输入邮件主题', 'error'); return; }
+        if (!content) { App.toast('请输入邮件内容', 'error'); return; }
+        if (!confirm('确认向所有订阅者群发该邮件？')) return;
+        api('/api/admin/subscribers/send', {
+          method: 'POST',
+          body: { subject: subject, content: content },
+        }).then(function (d) {
+          App.toast(d.message || '群发完成', 'success');
+        }).catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function switchView(v) {
+        document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('data-view') === v);
+        });
+        document.getElementById('view-dashboard').classList.toggle('hidden', v !== 'dashboard');
+        document.getElementById('view-products').classList.toggle('hidden', v !== 'products');
+        document.getElementById('view-orders').classList.toggle('hidden', v !== 'orders');
+        document.getElementById('view-customers').classList.toggle('hidden', v !== 'customers');
+        document.getElementById('view-newsletter').classList.toggle('hidden', v !== 'newsletter');
+        document.getElementById('view-admins').classList.toggle('hidden', v !== 'admins');
+        // 延迟加载
+        if (v === 'customers') loadCustomers(document.getElementById('customer-search').value);
+        if (v === 'newsletter') loadSubscribers();
+        if (v === 'admins') loadAdmins();
+      }
+
+      window.Admin = {
+        stock: stock, ship: ship, delProduct: delProduct, viewOrder: viewOrder,
+        toggleCustomer: toggleCustomer, delCustomer: delCustomer,
+        addAdmin: addAdmin, editAdmin: editAdmin, delAdmin: delAdmin,
+        delSubscriber: delSubscriber,
+      };
+
+      document.getElementById('admin-login-btn').onclick = login;
+      document.getElementById('add-product-btn').onclick = function () {
         var name = prompt('商品名称(中文)');
         if (!name) return;
         var price = prompt('基础价格');
@@ -149,35 +419,18 @@
           }
         }).then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
           .catch(function (e) { App.toast(e.message, 'error'); });
-      }
-
-      function stock(skuId, val) {
-        api('/api/admin/skus/' + skuId + '/stock', { method: 'PUT', body: { stock: Number(val), reason: 'admin_adjust' } })
-          .then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
-          .catch(function (e) { App.toast(e.message, 'error'); });
-      }
-
-      function ship(orderNo) {
-        api('/api/admin/orders/' + orderNo + '/ship', { method: 'POST' })
-          .then(function () { App.toast(t('operation_success'), 'success'); loadOrders(); loadDashboard(); })
-          .catch(function (e) { App.toast(e.message, 'error'); });
-      }
-
-      function switchView(v) {
-        document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
-          a.classList.toggle('active', a.getAttribute('data-view') === v);
-        });
-        document.getElementById('view-dashboard').classList.toggle('hidden', v !== 'dashboard');
-        document.getElementById('view-products').classList.toggle('hidden', v !== 'products');
-        document.getElementById('view-orders').classList.toggle('hidden', v !== 'orders');
-      }
-
-      window.Admin = { stock: stock, ship: ship };
-
-      document.getElementById('admin-login-btn').onclick = login;
-      document.getElementById('add-product-btn').onclick = addProduct;
+      };
+      document.getElementById('add-admin-btn').onclick = addAdmin;
+      document.getElementById('send-newsletter-btn').onclick = sendNewsletter;
       document.getElementById('admin-logout').onclick = function () {
-        App.clearAdminToken(); adminToken = null; shoeLogin();
+        App.clearAdminToken(); adminToken = null; adminRole = '';
+        localStorage.removeItem('admin_role'); localStorage.removeItem('admin_username');
+        shoeLogin();
+      };
+      document.getElementById('customer-search').oninput = function () {
+        var v = this.value;
+        clearTimeout(this._t);
+        this._t = setTimeout(function () { loadCustomers(v); }, 400);
       };
       document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
         a.onclick = function () { switchView(a.getAttribute('data-view')); };
@@ -188,6 +441,8 @@
           adminToken = App.getAdminToken();
           showApp();
           loadDashboard(); loadProducts(); loadOrders();
+          if (adminRole === 'superadmin') loadAdmins();
+          applyRoleUI();
         } else {
           shoeLogin();
         }

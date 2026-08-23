@@ -32,6 +32,17 @@
       have_account: '已有账号？', products_title: '商品列表', dashboard_title: '仪表盘',
       order_management: '订单管理', product_management: '商品管理',
       total_amount: '订单金额', unpaid: '未支付',
+      // ---- 邮箱验证码 ----
+      verify_code: '验证码', verify_code_ph: '6 位数字验证码', send_code: '发送验证码',
+      resend_in: '重新发送(', code_sent: '验证码已发送，请查收邮件', required: '不能为空',
+      verify_code_required: '请先获取并填写邮箱验证码',
+      code_sent_dev: '开发模式验证码',
+      forgot_password: '忘记密码？', reset_password: '重置密码', new_password: '新密码',
+      new_password_ph: '输入新密码（至少 6 位）', back_to_login: '返回登录',
+      reset_password_ok: '密码已重置，请使用新密码登录',
+      confirm_password: '确认密码', confirm_password_ph: '再次输入密码',
+      password_mismatch: '两次输入的密码不一致',
+      invalid_email: '邮箱格式不正确', password_too_short: '密码至少 6 位',
     },
     en: {
       home: 'Home', products: 'Products', cart: 'Cart', orders: 'My Orders',
@@ -61,6 +72,18 @@
       have_account: 'Already have an account?', products_title: 'Products', dashboard_title: 'Dashboard',
       order_management: 'Orders', product_management: 'Products',
       total_amount: 'Order Amount', unpaid: 'Unpaid',
+      // ---- Email verification code ----
+      verify_code: 'Verification Code', verify_code_ph: '6-digit code',
+      send_code: 'Send Code', resend_in: 'Resend in (',
+      code_sent: 'Verification code sent, please check your email',
+      required: 'is required', verify_code_required: 'Please request and enter the verification code',
+      code_sent_dev: 'Dev mode code',
+      forgot_password: 'Forgot password?', reset_password: 'Reset Password', new_password: 'New Password',
+      new_password_ph: 'Enter new password (min 6 chars)', back_to_login: 'Back to login',
+      reset_password_ok: 'Password reset, please login with new password',
+      confirm_password: 'Confirm Password', confirm_password_ph: 'Enter password again',
+      password_mismatch: 'Passwords do not match',
+      invalid_email: 'Invalid email format', password_too_short: 'Password must be at least 6 characters',
     },
   };
 
@@ -185,7 +208,7 @@
       + '<button data-lang="zh" class="' + (getLang() === 'zh' ? 'active' : '') + '">中</button>'
       + '<button data-lang="en" class="' + (getLang() === 'en' ? 'active' : '') + '">EN</button>'
       + '</div>';
-    right += '<a class="cart-link" href="/cart.html">🛒<span id="cart-badge" class="cart-badge">0</span></a>';
+    right += '<a class="cart-link" href="/cart.html"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg><span id="cart-badge" class="cart-badge">0</span></a>';
     right += '<a class="btn btn-outline btn-sm" href="/admin.html">' + t('admin') + '</a>';
     if (token) {
       right += '<div class="auth-btns"><button class="btn btn-outline btn-sm" onclick="App.logout()">' + t('logout') + '</button></div>';
@@ -219,8 +242,9 @@
       .catch(function () { el.textContent = '0'; });
   }
 
-  // ---------- 登录/注册弹窗 ----------
-  var _authMode = 'login';
+  // ---------- 登录/注册/忘记密码弹窗 ----------
+  var _authMode = 'login'; // 'login' | 'register' | 'reset'
+  var _codeCooldown = 0; // 发送验证码倒计时
 
   function buildAuthModal() {
     var exists = document.getElementById('auth-modal');
@@ -234,34 +258,76 @@
       + '<input type="text" id="auth-fullname" placeholder="' + t('full_name') + '"></div>'
       + '<div class="form-group"><label>' + t('email') + '</label>'
       + '<input type="email" id="auth-email" placeholder="email@example.com"></div>'
-      + '<div class="form-group"><label>' + t('password') + '</label>'
+      + '<div class="form-group" id="auth-password-group"><label>' + t('password') + '</label>'
       + '<input type="password" id="auth-password" placeholder="********"></div>'
+      + '<div class="form-group" id="auth-newpassword-group" style="display:none"><label>' + t('new_password') + '</label>'
+      + '<input type="password" id="auth-newpassword" placeholder="' + t('new_password_ph') + '"></div>'
+      + '<div class="form-group" id="auth-confirm-group" style="display:none"><label>' + t('confirm_password') + '</label>'
+      + '<input type="password" id="auth-confirm" placeholder="' + t('confirm_password_ph') + '"></div>'
+      + '<div class="form-group" id="auth-code-group" style="display:none"><label>' + t('verify_code') + '</label>'
+      + '<div style="display:flex;gap:8px"><input type="text" id="auth-code" placeholder="' + t('verify_code_ph') + '" style="flex:1">'
+      + '<button class="btn btn-outline btn-sm" id="auth-send-code" type="button">' + t('send_code') + '</button></div></div>'
       + '<div class="modal-actions">'
       + '<button class="btn btn-outline" id="auth-switch">' + t('register') + '</button>'
       + '<button class="btn btn-primary" id="auth-submit">' + t('login') + '</button>'
+      + '</div>'
+      + '<div class="modal-switch" style="margin-top:10px;font-size:13px;color:var(--jjs-gray, #666)">'
+      + '<a href="javascript:void(0)" id="auth-forgot" style="margin-right:8px">' + t('forgot_password') + '</a>'
       + '</div></div>';
     document.body.appendChild(mask);
     mask.querySelector('#auth-switch').onclick = function () {
-      _authMode = _authMode === 'login' ? 'register' : 'login';
+      _authMode = _authMode === 'register' ? 'login' : 'register';
+      updateAuthModal();
+    };
+    mask.querySelector('#auth-forgot').onclick = function () {
+      _authMode = 'reset';
       updateAuthModal();
     };
     mask.querySelector('#auth-submit').onclick = submitAuth;
+    mask.querySelector('#auth-send-code').onclick = sendVerifyCode;
     mask.onclick = function (e) { if (e.target === mask) closeAuth(); };
   }
 
   function updateAuthModal() {
     var title = document.getElementById('auth-title');
     var nameGroup = document.getElementById('auth-name-group');
+    var codeGroup = document.getElementById('auth-code-group');
+    var passwordGroup = document.getElementById('auth-password-group');
+    var newPasswordGroup = document.getElementById('auth-newpassword-group');
+    var confirmGroup = document.getElementById('auth-confirm-group');
     var submit = document.getElementById('auth-submit');
     var sw = document.getElementById('auth-switch');
+    var forgot = document.getElementById('auth-forgot');
     if (_authMode === 'login') {
       title.textContent = t('login'); submit.textContent = t('login');
-      sw.textContent = t('no_account') + ' ' + t('register');
+      sw.textContent = t('register');
+      sw.style.display = '';
+      forgot.style.display = '';
       nameGroup.classList.add('hidden');
-    } else {
+      codeGroup.style.display = 'none';
+      passwordGroup.style.display = '';
+      newPasswordGroup.style.display = 'none';
+      confirmGroup.style.display = 'none';
+    } else if (_authMode === 'register') {
       title.textContent = t('register'); submit.textContent = t('register');
-      sw.textContent = t('have_account') + ' ' + t('login');
+      sw.textContent = t('back_to_login');
+      sw.style.display = '';
+      forgot.style.display = 'none';
       nameGroup.classList.remove('hidden');
+      codeGroup.style.display = '';
+      passwordGroup.style.display = '';
+      newPasswordGroup.style.display = 'none';
+      confirmGroup.style.display = '';
+    } else { // reset
+      title.textContent = t('reset_password'); submit.textContent = t('reset_password');
+      sw.textContent = t('back_to_login');
+      sw.style.display = '';
+      forgot.style.display = 'none';
+      nameGroup.classList.add('hidden');
+      codeGroup.style.display = '';
+      passwordGroup.style.display = 'none';
+      newPasswordGroup.style.display = '';
+      confirmGroup.style.display = '';
     }
   }
 
@@ -277,13 +343,65 @@
     if (m) m.classList.add('hidden');
   }
 
+  function sendVerifyCode() {
+    var email = document.getElementById('auth-email').value.trim();
+    if (_codeCooldown > 0) return;
+    // 邮箱 + 密码（两次一致）校验通过后才发送验证码
+    if (!email) { toast(t('email') + ' ' + t('required'), 'error'); return; }
+    var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) { toast(t('invalid_email'), 'error'); return; }
+    if (_authMode === 'register') {
+      var password = document.getElementById('auth-password').value;
+      if (!password) { toast(t('password') + ' ' + t('required'), 'error'); return; }
+      if (password.length < 6) { toast(t('password_too_short'), 'error'); return; }
+      var confirmPassword = document.getElementById('auth-confirm').value;
+      if (password !== confirmPassword) { toast(t('password_mismatch'), 'error'); return; }
+    } else if (_authMode === 'reset') {
+      var newPassword = document.getElementById('auth-newpassword').value;
+      if (!newPassword || newPassword.length < 6) { toast(t('new_password_ph'), 'error'); return; }
+      var rconfirm = document.getElementById('auth-confirm').value;
+      if (newPassword !== rconfirm) { toast(t('password_mismatch'), 'error'); return; }
+    }
+    var btn = document.getElementById('auth-send-code');
+    btn.disabled = true;
+    btn.textContent = '...';
+    var purpose = _authMode === 'reset' ? 'reset' : 'register';
+    api('/api/auth/send-code', { method: 'POST', includeLang: false, body: { email: email, purpose: purpose } })
+      .then(function (data) {
+        // 开发模式：接口回传 debug_code，直接填入并提示
+        if (data && data.debug_code) {
+          document.getElementById('auth-code').value = data.debug_code;
+          toast(t('code_sent_dev') + '：' + data.debug_code, 'success');
+        } else {
+          toast(t('code_sent'), 'success');
+        }
+        _codeCooldown = 60;
+        btn.textContent = t('resend_in') + ' 60s';
+        var iv = setInterval(function () {
+          _codeCooldown--;
+          if (_codeCooldown <= 0) {
+            clearInterval(iv);
+            btn.disabled = false;
+            btn.textContent = t('send_code');
+          } else {
+            btn.textContent = t('resend_in') + ' ' + _codeCooldown + 's';
+          }
+        }, 1000);
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        btn.textContent = t('send_code');
+        toast(e.message, 'error');
+      });
+  }
+
   function submitAuth() {
     var email = document.getElementById('auth-email').value.trim();
     var password = document.getElementById('auth-password').value;
     var fullName = document.getElementById('auth-fullname').value.trim();
-    if (!email || !password) { toast(t('email') + ' / ' + t('password'), 'error'); return; }
 
     if (_authMode === 'login') {
+      if (!email || !password) { toast(t('email') + ' / ' + t('password'), 'error'); return; }
       api('/api/auth/login', { method: 'POST', includeLang: false, body: { email: email, password: password } })
         .then(function (data) {
           setToken(data.access_token);
@@ -293,13 +411,35 @@
           renderNav();
         })
         .catch(function (e) { toast(e.message, 'error'); });
-    } else {
-      api('/api/auth/register', { method: 'POST', includeLang: false, body: { email: email, password: password, full_name: fullName } })
+    } else if (_authMode === 'register') {
+      var code = document.getElementById('auth-code').value.trim();
+      var confirmPassword = document.getElementById('auth-confirm').value;
+      if (!code) { toast(t('verify_code_required'), 'error'); return; }
+      if (password !== confirmPassword) { toast(t('password_mismatch'), 'error'); return; }
+      api('/api/auth/register', { method: 'POST', includeLang: false, body: { email: email, password: password, full_name: fullName, code: code } })
         .then(function (data) {
           setToken(data.access_token);
           closeAuth();
           toast(t('operation_success'), 'success');
           renderNav();
+        })
+        .catch(function (e) { toast(e.message, 'error'); });
+    } else { // reset
+      var newPassword = document.getElementById('auth-newpassword').value;
+      var rcode = document.getElementById('auth-code').value.trim();
+      var rconfirm = document.getElementById('auth-confirm').value;
+      if (!newPassword || newPassword.length < 6) { toast(t('new_password_ph'), 'error'); return; }
+      if (newPassword !== rconfirm) { toast(t('password_mismatch'), 'error'); return; }
+      if (!rcode) { toast(t('verify_code_required'), 'error'); return; }
+      api('/api/auth/reset-password', { method: 'POST', includeLang: false, body: { email: email, code: rcode, new_password: newPassword } })
+        .then(function (data) {
+          toast(data.message || t('reset_password_ok'), 'success');
+          _authMode = 'login';
+          updateAuthModal();
+          document.getElementById('auth-password').value = '';
+          document.getElementById('auth-newpassword').value = '';
+          document.getElementById('auth-confirm').value = '';
+          document.getElementById('auth-code').value = '';
         })
         .catch(function (e) { toast(e.message, 'error'); });
     }

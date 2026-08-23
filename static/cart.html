@@ -12,11 +12,11 @@
     <main-nav active="cart"></main-nav>
 
     <div class="container">
-      <h1 class="page-title">🛒 {{ t('cart') }}</h1>
+      <h1 class="page-title"><base-icon name="cart" :size="26"></base-icon> {{ t('cart') }}</h1>
 
       <!-- 未登录：登录引导 -->
       <div class="empty" v-if="notLoggedIn">
-        <div class="empty-icon">🔒</div>
+        <div class="empty-icon"><base-icon name="lock" :size="52"></base-icon></div>
         <div>{{ t('need_login') }}</div>
         <div style="font-size:13px;margin-top:6px">{{ t('cart_login_tip') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="doLogin">
@@ -26,7 +26,7 @@
 
       <!-- 空购物车 -->
       <div class="empty" v-else-if="!loading && !items.length">
-        <div class="empty-icon">🛒</div>
+        <div class="empty-icon"><base-icon name="cart" :size="52"></base-icon></div>
         <div>{{ t('empty_cart') }}</div>
         <div style="font-size:13px;margin-top:6px">{{ t('empty_cart_desc') }}</div>
         <button class="btn btn-primary" style="margin-top:18px" @click="goShopping">
@@ -69,19 +69,19 @@
                 </td>
                 <td style="font-weight:700">{{ money(it.subtotal) }}</td>
                 <td>
-                  <button class="btn btn-ghost btn-sm" @click="removeItem(it)">🗑 {{ t('delete') }}</button>
+                  <button class="btn btn-ghost btn-sm" @click="removeItem(it)"><base-icon name="trash" :size="14"></base-icon> {{ t('delete') }}</button>
                 </td>
               </tr>
             </tbody>
           </table>
           <div style="margin-top:14px;font-size:13px;color:var(--jjs-gray-light)">
-            💡 {{ t('free_ship') }} · {{ t('easy_return') }}
+            <base-icon name="bulb" :size="14"></base-icon> {{ t('free_ship') }} · {{ t('easy_return') }}
           </div>
         </div>
 
         <!-- 结算侧栏 -->
         <div class="side-card">
-          <h3>💳 {{ t('checkout') }}</h3>
+          <h3><base-icon name="card" :size="20"></base-icon> {{ t('checkout') }}</h3>
 
           <div class="form-group" v-if="addresses.length">
             <label>{{ t('my_addresses') }}</label>
@@ -93,7 +93,7 @@
                 <strong @click.stop>{{ a.receiver_name }}</strong>
                 <span style="color:#999"> · {{ a.phone }}</span>
                 <div style="color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.detail }}</div>
-                <span v-if="a.is_default" style="color:var(--jjs-primary);font-weight:600">★ {{ t('addr_default') }}</span>
+                <span v-if="a.is_default" style="color:var(--jjs-primary);font-weight:600"><base-icon name="star" :size="13" fill></base-icon> {{ t('addr_default') }}</span>
               </div>
             </div>
           </div>
@@ -118,7 +118,7 @@
           <div class="pay-methods">
             <div class="pay-method" :class="{active: form.payment_method === m.value}"
                  v-for="m in payMethods" :key="m.value" @click="form.payment_method = m.value">
-              <span class="pm-icon">{{ m.icon }}</span>
+              <span class="pm-icon"><base-icon :name="m.icon" :size="20"></base-icon></span>
               <div>
                 <div class="pm-name">{{ m.label }}</div>
                 <div class="pm-desc" v-if="!m.enabled">({{ t('pending') }})</div>
@@ -151,7 +151,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=5"></script>
+  <script src="/static/js/pymall.js?v=16"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -222,10 +222,10 @@
 
           var payMethods = Vue.computed(function () {
             return [
-              { value: 'mock', icon: '🧪', label: t('mock_pay'), enabled: true },
-              { value: 'alipay', icon: '🅰️', label: t('alipay'), enabled: false },
-              { value: 'wechat', icon: '💚', label: t('wechat'), enabled: false },
-              { value: 'stripe', icon: '💳', label: 'Stripe', enabled: false },
+              { value: 'mock', icon: 'card', label: t('mock_pay'), enabled: true },
+              { value: 'alipay', icon: 'wallet', label: t('alipay'), enabled: false },
+              { value: 'wechat', icon: 'review', label: t('wechat'), enabled: false },
+              { value: 'stripe', icon: 'card', label: 'Stripe', enabled: false },
             ];
           });
 

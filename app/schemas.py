@@ -13,6 +13,25 @@ class Message(BaseModel):
     message: str
 
 
+# ---------- 订阅 ----------
+class SubscribeIn(BaseModel):
+    email: EmailStr
+
+
+class SubscriberOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    is_active: bool
+    created_at: datetime
+
+
+class NewsletterSendIn(BaseModel):
+    subject: str = Field(min_length=1, max_length=200)
+    content: str = Field(min_length=1)
+
+
 # ---------- 分类 ----------
 class CategoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -100,11 +119,28 @@ class RegisterIn(BaseModel):
     full_name: str = ""
     phone: str | None = None
     language: str | None = None
+    code: str = Field(default="", max_length=10)  # 邮箱验证码
+
+
+class SendVerifyCodeIn(BaseModel):
+    email: EmailStr
+    purpose: str = "register"  # register / reset
+
+
+class ResetPasswordIn(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=4, max_length=10)
+    new_password: str = Field(min_length=6)
 
 
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
+
+
+class CustomerUpdateIn(BaseModel):
+    full_name: str | None = None
+    phone: str | None = None
 
 
 class CustomerOut(BaseModel):
@@ -263,6 +299,7 @@ class OrderOut(BaseModel):
     paid_at: datetime | None
     shipped_at: datetime | None
     items: list[OrderItemOut]
+    payments: list[PaymentOut] = []
 
 
 class OrderCreateOut(BaseModel):
@@ -308,6 +345,49 @@ class AdminLoginOut(BaseModel):
     username: str
     full_name: str
     role: str
+
+
+# 管理后台：管理员账号管理
+class AdminUserIn(BaseModel):
+    username: str = Field(min_length=2, max_length=64)
+    password: str = Field(min_length=6)
+    full_name: str = ""
+    role: str = "operator"  # superadmin / operator / viewer
+
+
+class AdminUserUpdateIn(BaseModel):
+    full_name: str | None = None
+    role: str | None = None
+    is_active: bool | None = None
+    password: str | None = Field(default=None, min_length=6)
+
+
+class AdminUserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    username: str
+    full_name: str
+    role: str
+    is_active: bool
+    last_login: datetime | None
+    created_at: datetime
+
+
+# 管理后台：客户管理
+class AdminCustomerOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    email: str
+    full_name: str
+    phone: str | None
+    language: str
+    is_active: bool
+    last_login: datetime | None
+    created_at: datetime
+    orders_count: int = 0
+    total_spent: Decimal = Decimal("0")
 
 
 class ProductCreateIn(BaseModel):

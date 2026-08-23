@@ -17,6 +17,7 @@
       login: '登录', register: '注册', logout: '退出登录', admin: '管理后台',
       search_placeholder: '搜索商品...',
       hot_categories: '热门分类', featured: '推荐商品', all_products: '全部商品',
+      all_orders: '全部订单',
       add_to_cart: '加入购物车', buy_now: '立即购买', stock: '库存', sold: '已售',
       quantity: '数量', checkout: '结算', submit_order: '提交订单',
       receiver_name: '收货人', receiver_phone: '联系电话', receiver_address: '收货地址',
@@ -48,8 +49,20 @@
       home_sub: '精选全球好物，潮流设计，品质之选',
       shop_now: '立即选购', all_categories: '全部',
       order_detail: '订单详情', receiver: '收货人', order_items: '订单商品',
+      order_time: '下单时间', pay_time: '支付时间', ship_time: '发货时间',
+      shipping_fee_detail: '运费', discount_detail: '优惠', payment_amount: '实付款',
+      order_logistics: '物流信息', logistics_pending: '等待发货',
       confirm: '确认', cancel: '取消', back: '返回',
       admin: '管理后台', my_orders: '我的订单',
+      // ---- 我的（账户中心） ----
+      my_account: '我的', my_account_center: '个人中心', my_profile: '我的资料',
+      pending_orders_title: '待支付', paid_orders_title: '已支付订单',
+      my_addresses_title: '我的地址', my_reviews_title: '我的评价',
+      my_wishlist_title: '我的收藏', my_after_sales: '我的售后',
+      edit: '编辑', save: '保存', phone: '手机号', view_all: '查看全部',
+      confirm_delete: '确认删除该条记录？',
+      approved_review: '已通过', review_pending: '审核中',
+      after_sales_empty: '暂无售后记录', after_sales_tip: '如有退换货需求，请联系在线客服',
       // ---- 登录引导 ----
       orders_login_tip: '登录后查看您的订单', cart_login_tip: '登录后查看和管理您的购物车',
       // ---- About Us ----
@@ -82,8 +95,9 @@
       // ---- 收藏 ----
       wishlist: '收藏', my_wishlist: '我的收藏', added_to_wishlist: '已加入收藏',
       removed_from_wishlist: '已取消收藏', wishlist_empty: '收藏夹是空的',
-      wishlist_empty_desc: '点击商品上的 ♥ 收藏心仪好物',
+      wishlist_empty_desc: '点击商品上的 ★ 收藏心仪好物',
       wishlisted: '已收藏', add_wishlist: '加入收藏', go_shopping: '去逛逛',
+      clear_wishlist: '清空收藏',
       // ---- 评价 ----
       reviews: '商品评价', review_count: '条评价', write_review: '写评价',
       review_title: '评价标题', review_content: '评价内容', review_rating: '评分',
@@ -100,12 +114,25 @@
       sort_default: '默认排序', sort_price_asc: '价格从低到高', sort_price_desc: '价格从高到低',
       sort_sales_desc: '销量优先', compare: '对比', no_wishlist: '暂无收藏',
       confirm: '确定', reset: '重置',
+      // ---- 邮箱验证码 ----
+      verify_code: '验证码', verify_code_ph: '6 位数字验证码', send_code: '发送验证码',
+      resend_in: '重新发送(', code_sent: '验证码已发送，请查收邮件', required: '不能为空',
+      verify_code_required: '请先获取并填写邮箱验证码',
+      code_sent_dev: '开发模式验证码',
+      // ---- 忘记密码 ----
+      forgot_password: '忘记密码？', reset_password: '重置密码', new_password: '新密码',
+      new_password_ph: '输入新密码（至少 6 位）', back_to_login: '返回登录',
+      reset_password_ok: '密码已重置，请使用新密码登录',
+      confirm_password: '确认密码', confirm_password_ph: '再次输入密码',
+      password_mismatch: '两次输入的密码不一致',
+      invalid_email: '邮箱格式不正确', password_too_short: '密码至少 6 位',
     },
     en: {
       home: 'Home', products: 'Products', cart: 'Cart', orders: 'My Orders',
       login: 'Login', register: 'Register', logout: 'Logout', admin: 'Admin',
       search_placeholder: 'Search products...',
       hot_categories: 'Hot Categories', featured: 'Featured', all_products: 'All Products',
+      all_orders: 'All Orders',
       add_to_cart: 'Add to Cart', buy_now: 'Buy Now', stock: 'Stock', sold: 'Sold',
       quantity: 'Qty', checkout: 'Checkout', submit_order: 'Place Order',
       receiver_name: 'Full Name', receiver_phone: 'Phone', receiver_address: 'Address',
@@ -137,8 +164,20 @@
       home_sub: 'Curated global picks, trendy designs, quality choices',
       shop_now: 'Shop Now', all_categories: 'All',
       order_detail: 'Order Detail', receiver: 'Receiver', order_items: 'Items',
+      order_time: 'Order Time', pay_time: 'Paid At', ship_time: 'Shipped At',
+      shipping_fee_detail: 'Shipping Fee', discount_detail: 'Discount', payment_amount: 'Paid Amount',
+      order_logistics: 'Logistics', logistics_pending: 'Awaiting Shipment',
       confirm: 'Confirm', cancel: 'Cancel', back: 'Back',
       admin: 'Admin', my_orders: 'My Orders',
+      // ---- 我的（账户中心） ----
+      my_account: 'My Account', my_account_center: 'Account Center', my_profile: 'My Profile',
+      pending_orders_title: 'Pending Payment', paid_orders_title: 'Paid Orders',
+      my_addresses_title: 'My Addresses', my_reviews_title: 'My Reviews',
+      my_wishlist_title: 'My Wishlist', my_after_sales: 'After-sales',
+      edit: 'Edit', save: 'Save', phone: 'Phone', view_all: 'View All',
+      confirm_delete: 'Confirm delete this record?',
+      approved_review: 'Approved', review_pending: 'Pending',
+      after_sales_empty: 'No after-sales records', after_sales_tip: 'For returns or exchanges, please contact support',
       // ---- 登录引导 ----
       orders_login_tip: 'Log in to view your orders', cart_login_tip: 'Log in to view and manage your cart',
       // ---- About Us ----
@@ -171,8 +210,9 @@
       // ---- 收藏 ----
       wishlist: 'Wishlist', my_wishlist: 'My Wishlist', added_to_wishlist: 'Added to wishlist',
       removed_from_wishlist: 'Removed from wishlist', wishlist_empty: 'Your wishlist is empty',
-      wishlist_empty_desc: 'Tap the ♥ on any product to save it', wishlisted: 'Saved',
+      wishlist_empty_desc: 'Tap the ★ on any product to save it', wishlisted: 'Saved',
       add_wishlist: 'Add to Wishlist', go_shopping: 'Start Shopping',
+      clear_wishlist: 'Clear Wishlist',
       // ---- 评价 ----
       reviews: 'Reviews', review_count: 'reviews', write_review: 'Write a Review',
       review_title: 'Review Title', review_content: 'Review Content', review_rating: 'Rating',
@@ -190,6 +230,19 @@
       sort_default: 'Default', sort_price_asc: 'Price: Low to High', sort_price_desc: 'Price: High to Low',
       sort_sales_desc: 'Best Selling', compare: 'Compare', no_wishlist: 'No wishlist items',
       confirm: 'Apply', reset: 'Reset',
+      // ---- Email verification code ----
+      verify_code: 'Verification Code', verify_code_ph: '6-digit code',
+      send_code: 'Send Code', resend_in: 'Resend in (',
+      code_sent: 'Verification code sent, please check your email',
+      required: 'is required', verify_code_required: 'Please request and enter the verification code',
+      code_sent_dev: 'Dev mode code',
+      // ---- Forgot password ----
+      forgot_password: 'Forgot password?', reset_password: 'Reset Password', new_password: 'New Password',
+      new_password_ph: 'Enter new password (min 6 chars)', back_to_login: 'Back to login',
+      reset_password_ok: 'Password reset, please login with new password',
+      confirm_password: 'Confirm Password', confirm_password_ph: 'Enter password again',
+      password_mismatch: 'Passwords do not match',
+      invalid_email: 'Invalid email format', password_too_short: 'Password must be at least 6 characters',
     },
   };
 
@@ -269,7 +322,7 @@
     cartCount: 0,
     wishlistCount: 0,
     authModal: false,
-    authMode: 'login', // 'login' | 'register'
+    authMode: 'login', // 'login' | 'register' | 'reset'
     cartItems: [],
   });
 
@@ -383,13 +436,70 @@
     });
   }
 
+  // ---------- SVG 图标库（替代 emoji） ----------
+  var ICONS = {
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+    user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    truck: '<path d="M15 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35a1 1 0 0 0-.78-.38H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+    box: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+    wallet: '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+    location: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    review: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    headset: '<path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Z"/><path d="M21 11h-3a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-5Z"/><path d="M21 16v2a4 4 0 0 1-4 4h-5"/><path d="M3 16v2a4 4 0 0 0 4 4h2"/>',
+    chevronRight: '<path d="m9 18 6-6-6-6"/>',
+    lock: '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+    save: '<path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8Z"/><path d="M15 3v6h6"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/>',
+    pencil: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+    shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+    refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+    card: '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/>',
+    settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    filter: '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+    home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    fire: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3 1.072-2.143 2.5-3 4.5-4.5 2 4 1 7.5-1 9a5 5 0 0 1-8-5c-.5 1-1 3 1 6z"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+    bulb: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.23.47 2.34 1.5 3.5.76.76 1.22 1.52 1.41 2.5"/>',
+    palette: '<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+    handshake: '<path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/>',
+  };
+
+  // 图标组件
+  var BaseIcon = {
+    props: {
+      name: { type: String, required: true },
+      size: { type: [Number, String], default: 18 },
+      fill: { type: Boolean, default: false },
+    },
+    template: `<svg :width="size" :height="size" viewBox="0 0 24 24"
+      :fill="fill ? 'currentColor' : 'none'"
+      :stroke="fill ? 'none' : 'currentColor'"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      style="flex-shrink:0;vertical-align:middle" v-html="path"></svg>`,
+    computed: {
+      path: function () { return ICONS[this.name] || ''; },
+    },
+  };
+
   // ---------- 全局组件 ----------
   // 顶部服务条
   var TopBar = {
     template: `
       <div class="topbar">
         <div class="topbar-inner">
-          <span>🚚 {{ t('free_ship') }} · {{ t('easy_return') }}</span>
+          <span><base-icon name="truck" :size="14"></base-icon> {{ t('free_ship') }} · {{ t('easy_return') }}</span>
         </div>
       </div>`,
     setup() {
@@ -425,20 +535,16 @@
             <a href="/" class="link" :class="{active: active==='home'}">{{ t('home') }}</a>
             <a href="/products.html" class="link" :class="{active: active==='products'}">{{ t('products') }}</a>
             <a href="/about.html" class="link" :class="{active: active==='about'}">{{ t('about') }}</a>
-            <a href="/orders.html" class="link" :class="{active: active==='orders'}">{{ t('orders') }}</a>
           </div>
           <div class="nav-actions">
             <div class="lang-switch">
               <button :class="{active: lang==='zh'}" @click="switchLang('zh')">中</button>
               <button :class="{active: lang==='en'}" @click="switchLang('en')">EN</button>
             </div>
-            <a href="/cart.html" class="cart-link" title="Cart">🛒
+            <a href="/cart.html" class="cart-link" title="Cart"><base-icon name="cart" :size="20"></base-icon>
               <span class="cart-badge" v-if="cartCount > 0">{{ cartCount }}</span>
             </a>
-            <a href="/wishlist.html" class="cart-link" title="Wishlist">❤
-              <span class="cart-badge wishlist-badge" v-if="wishlistCount > 0">{{ wishlistCount }}</span>
-            </a>
-            <a href="/orders.html" class="account-link" v-if="loggedIn" @click.prevent="goOrders">👤 {{ t('orders') }}</a>
+            <a href="/account.html" class="account-link" v-if="loggedIn" @click.prevent="goAccount"><base-icon name="user" :size="16"></base-icon> {{ t('my_account') }}</a>
             <button class="btn btn-primary btn-sm" v-else @click="openAuth('login')">{{ t('login') }}</button>
           </div>
         </div>
@@ -456,6 +562,7 @@
       });
       function goHome() { location.href = '/'; }
       function goOrders() { location.href = '/orders.html'; }
+      function goAccount() { location.href = '/account.html'; }
       function onSearch() {
         if (state.kw && state.kw.trim()) {
           location.href = '/products.html?q=' + encodeURIComponent(state.kw.trim());
@@ -504,7 +611,7 @@
           get: () => state.kw,
           set: (v) => { state.kw = v; },
         }),
-        switchLang, openAuth, onSearch, onKWChange, onKWFocus, onKWBlur, pickSuggestion, goHome, goOrders,
+        switchLang, openAuth, onSearch, onKWChange, onKWFocus, onKWBlur, pickSuggestion, goHome, goOrders, goAccount,
       };
     },
   };
@@ -515,7 +622,7 @@
       <div class="modal-mask" v-if="store.authModal" @click.self="close">
         <div class="modal">
           <button class="modal-close" @click="close">×</button>
-          <h3>{{ store.authMode === 'login' ? t('login') : t('register') }}</h3>
+          <h3>{{ title }}</h3>
           <div class="form-group">
             <label>{{ t('full_name') }}</label>
             <input type="text" v-model="form.fullName" v-if="store.authMode==='register'"
@@ -525,45 +632,161 @@
             <label>{{ t('email') }}</label>
             <input type="email" v-model="form.email" placeholder="email@example.com" />
           </div>
-          <div class="form-group">
+          <div class="form-group" v-if="store.authMode==='login'">
             <label>{{ t('password') }}</label>
             <input type="password" v-model="form.password" placeholder="********"
                    @keyup.enter="submit" />
           </div>
+          <div class="form-group" v-if="store.authMode==='register'">
+            <label>{{ t('password') }}</label>
+            <input type="password" v-model="form.password" placeholder="********" />
+          </div>
+          <div class="form-group" v-if="store.authMode==='register'">
+            <label>{{ t('confirm_password') }}</label>
+            <input type="password" v-model="form.confirmPassword" :placeholder="t('confirm_password_ph')"
+                   @keyup.enter="submit" />
+          </div>
+          <div class="form-group" v-if="store.authMode==='reset'">
+            <label>{{ t('new_password') }}</label>
+            <input type="password" v-model="form.newPassword" :placeholder="t('new_password_ph')" />
+          </div>
+          <div class="form-group" v-if="store.authMode==='reset'">
+            <label>{{ t('confirm_password') }}</label>
+            <input type="password" v-model="form.confirmPassword" :placeholder="t('confirm_password_ph')"
+                   @keyup.enter="submit" />
+          </div>
+          <div class="form-group" v-if="store.authMode==='register' || store.authMode==='reset'">
+            <label>{{ t('verify_code') }}</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" v-model="form.code" :placeholder="t('verify_code_ph')"
+                     style="flex:1" @keyup.enter="submit" />
+              <button class="btn btn-outline btn-sm" type="button" @click="sendCode"
+                      :disabled="cooldown > 0" style="white-space:nowrap">
+                {{ cooldown > 0 ? t('resend_in') + cooldown + 's)' : t('send_code') }}
+              </button>
+            </div>
+          </div>
           <div class="modal-actions">
             <button class="btn btn-primary btn-block" @click="submit">
-              {{ store.authMode === 'login' ? t('login') : t('register') }}
+              {{ submitLabel }}
             </button>
           </div>
           <div class="modal-switch">
-            <span v-if="store.authMode==='login'">{{ t('no_account') }}
+            <span v-if="store.authMode==='login'">
+              <a @click="store.authMode='reset'">{{ t('forgot_password') }}</a>
+              <span style="margin:0 6px">|</span>{{ t('no_account') }}
               <a @click="store.authMode='register'">{{ t('register') }}</a>
             </span>
-            <span v-else>{{ t('have_account') }}
+            <span v-else-if="store.authMode==='register'">{{ t('have_account') }}
               <a @click="store.authMode='login'">{{ t('login') }}</a>
+            </span>
+            <span v-else>
+              <a @click="store.authMode='login'">{{ t('back_to_login') }}</a>
             </span>
           </div>
         </div>
       </div>`,
     setup() {
-      const form = Vue.reactive({ email: '', password: '', fullName: '' });
+      const form = Vue.reactive({ email: '', password: '', fullName: '', code: '', newPassword: '', confirmPassword: '' });
+      const cooldown = Vue.ref(0);
+      let timer = null;
+
+      // 模式切换时清空相关字段
+      function watchMode(mode) {
+        form.code = '';
+        form.confirmPassword = '';
+        if (mode !== 'reset') form.newPassword = '';
+      }
+      Vue.watch(() => store.authMode, (m) => watchMode(m));
+
+      const title = Vue.computed(function () {
+        if (store.authMode === 'register') return t('register');
+        if (store.authMode === 'reset') return t('reset_password');
+        return t('login');
+      });
+      const submitLabel = Vue.computed(function () {
+        if (store.authMode === 'register') return t('register');
+        if (store.authMode === 'reset') return t('reset_password');
+        return t('login');
+      });
+
       function close() { store.authModal = false; }
-      function submit() {
-        if (!form.email || !form.password) {
-          toast(t('email') + ' / ' + t('password'), 'error');
-          return;
+
+      // 发送验证码前校验：邮箱 + 密码（两次一致）
+      function validateBeforeSendCode() {
+        if (!form.email) { toast(t('email') + ' ' + t('required'), 'error'); return false; }
+        var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRe.test(form.email)) { toast(t('invalid_email'), 'error'); return false; }
+        if (store.authMode === 'register') {
+          if (!form.password) { toast(t('password') + ' ' + t('required'), 'error'); return false; }
+          if (form.password.length < 6) { toast(t('password_too_short'), 'error'); return false; }
+          if (form.password !== form.confirmPassword) { toast(t('password_mismatch'), 'error'); return false; }
+        } else if (store.authMode === 'reset') {
+          if (!form.newPassword || form.newPassword.length < 6) { toast(t('new_password_ph'), 'error'); return false; }
+          if (form.newPassword !== form.confirmPassword) { toast(t('password_mismatch'), 'error'); return false; }
         }
+        return true;
+      }
+
+      function sendCode() {
+        if (cooldown.value > 0) return;
+        // 邮箱/密码全部校验通过后才发送验证码
+        if (!validateBeforeSendCode()) return;
+        cooldown.value = 60;
+        if (timer) clearInterval(timer);
+        timer = setInterval(function () {
+          cooldown.value--;
+          if (cooldown.value <= 0) clearInterval(timer);
+        }, 1000);
+        var purpose = store.authMode === 'reset' ? 'reset' : 'register';
+        api('/api/auth/send-code', {
+          method: 'POST', noLang: true,
+          body: { email: form.email, purpose: purpose },
+        }).then(function (data) {
+          if (data && data.debug_code) {
+            form.code = data.debug_code;
+            toast(t('code_sent_dev') + '：' + data.debug_code, 'success');
+          } else {
+            toast(t('code_sent'), 'success');
+          }
+        }).catch(function (e) {
+          cooldown.value = 0;
+          toast(e.message, 'error');
+        });
+      }
+
+      function submit() {
+        if (!form.email) { toast(t('email') + ' ' + t('required'), 'error'); return; }
         if (store.authMode === 'login') {
+          if (!form.password) { toast(t('password') + ' ' + t('required'), 'error'); return; }
           login(form.email, form.password)
             .then(function () { toast(t('operation_success'), 'success'); })
             .catch(function (e) { toast(e.message, 'error'); });
-        } else {
-          register({ email: form.email, password: form.password, full_name: form.fullName })
+        } else if (store.authMode === 'register') {
+          if (!form.password) { toast(t('password') + ' ' + t('required'), 'error'); return; }
+          if (form.password !== form.confirmPassword) { toast(t('password_mismatch'), 'error'); return; }
+          if (!form.code) { toast(t('verify_code_required'), 'error'); return; }
+          register({ email: form.email, password: form.password, full_name: form.fullName, code: form.code })
             .then(function () { toast(t('operation_success'), 'success'); })
             .catch(function (e) { toast(e.message, 'error'); });
+        } else { // reset
+          if (!form.newPassword || form.newPassword.length < 6) { toast(t('new_password_ph'), 'error'); return; }
+          if (form.newPassword !== form.confirmPassword) { toast(t('password_mismatch'), 'error'); return; }
+          if (!form.code) { toast(t('verify_code_required'), 'error'); return; }
+          api('/api/auth/reset-password', {
+            method: 'POST', noLang: true,
+            body: { email: form.email, code: form.code, new_password: form.newPassword },
+          }).then(function (data) {
+            toast(data.message || t('reset_password_ok'), 'success');
+            store.authMode = 'login';
+            form.password = '';
+            form.newPassword = '';
+            form.confirmPassword = '';
+            form.code = '';
+          }).catch(function (e) { toast(e.message, 'error'); });
         }
       }
-      return { store, t, form, close, submit };
+      return { store, t, form, cooldown, title, submitLabel, close, submit, sendCode };
     },
   };
 
@@ -587,7 +810,7 @@
       <footer class="footer">
         <div class="newsletter">
           <div class="newsletter-inner">
-            <h3>📩 {{ t('subscribe_title') }}</h3>
+            <h3><base-icon name="mail" :size="20"></base-icon> {{ t('subscribe_title') }}</h3>
             <p>{{ t('subscribe_desc') }}</p>
             <div class="newsletter-form">
               <input :placeholder="t('subscribe_ph')" v-model="email" @keyup.enter="sub" />
@@ -599,7 +822,7 @@
           <div class="footer-col">
             <h4>{{ t('about_us') }}</h4>
             <p>{{ t('about_desc') }}</p>
-            <a href="/about.html" class="footer-link">{{ t('brand_story') }} →</a>
+            <a href="/about.html" class="footer-link">{{ t('brand_story') }} <base-icon name="chevronRight" :size="14"></base-icon></a>
           </div>
           <div class="footer-col">
             <h4>{{ t('cust_service') }}</h4>
@@ -612,8 +835,8 @@
           <div class="footer-col">
             <h4>{{ t('contact_us') }}</h4>
             <ul>
-              <li>📧 support@pymall.com</li>
-              <li>📞 400-888-8888</li>
+              <li><base-icon name="mail" :size="13"></base-icon> support@pymall.com</li>
+              <li><base-icon name="phone" :size="13"></base-icon> 400-888-8888</li>
             </ul>
           </div>
           <div class="footer-col">
@@ -626,9 +849,15 @@
     setup() {
       const state = Vue.reactive({ email: '' });
       function sub() {
-        if (!state.email) return;
-        toast(t('subscribe_ok'), 'success');
-        state.email = '';
+        if (!state.email) { toast(t('subscribe_ph'), 'error'); return; }
+        var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRe.test(state.email)) { toast(t('invalid_email'), 'error'); return; }
+        api('/api/subscribe', { method: 'POST', noLang: true, body: { email: state.email } })
+          .then(function (d) {
+            toast(d.message || t('subscribe_ok'), 'success');
+            state.email = '';
+          })
+          .catch(function (e) { toast(e.message, 'error'); });
       }
       return { t, email: Vue.computed(() => state.email), sub };
     },
@@ -658,7 +887,9 @@
     buyNow: buyNow,
     toast: toast,
     openAuth: openAuth,
+    icons: ICONS,
     components: {
+      BaseIcon: BaseIcon,
       TopBar: TopBar,
       MainNav: MainNav,
       AuthModal: AuthModal,
@@ -669,6 +900,7 @@
   // 页面入口统一挂载
   global.mountPyMall = function (options) {
     var app = Vue.createApp(options);
+    app.component('base-icon', BaseIcon);
     app.component('top-bar', TopBar);
     app.component('main-nav', MainNav);
     app.component('auth-modal', AuthModal);
