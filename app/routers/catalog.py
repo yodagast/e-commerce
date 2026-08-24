@@ -4,13 +4,13 @@ from __future__ import annotations
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.i18n import get_lang
-from app.models import Category, Product
+from app.models import Category, Product, WishlistItem
 from app.schemas import CategoryOut, ProductDetailOut, ProductListOut
 
 router = APIRouter(prefix="/api", tags=["catalog"])
@@ -53,13 +53,19 @@ async def list_products(
     featured: bool | None = None,
     min_price: Decimal | None = None,
     max_price: Decimal | None = None,
-    sort_by: str = "default",  # default | price_asc | price_desc | sales_desc
+    sort_by: str = "default",  # default | price_asc | price_desc | sales_desc | favorites_desc | newest
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
     """商品列表，支持分类、关键字搜索、推荐过滤、价格区间、排序和分页"""
-    stmt = select(Product).where(Product.status == "active")
+    favorite_count = func.count(WishlistItem.id).label("favorite_count")
+    stmt = (
+        select(Product, favorite_count)
+        .outerjoin(WishlistItem, WishlistItem.product_id == Product.id)
+        .where(Product.status == "active")
+        .group_by(Product.id)
+    )
 
     if category_id:
         stmt = stmt.where(Product.category_id == category_id)
@@ -75,17 +81,25 @@ async def list_products(
 
     # 排序
     if sort_by == "price_asc":
-        stmt = stmt.order_by(Product.base_price.asc(), Product.id)
+        stmt = stmt.order_by(Product.base_price.asc(), Product.id.desc())
     elif sort_by == "price_desc":
-        stmt = stmt.order_by(Product.base_price.desc(), Product.id)
+        stmt = stmt.order_by(Product.base_price.desc(), Product.id.desc())
     elif sort_by == "sales_desc":
         stmt = stmt.order_by(Product.sales_count.desc(), Product.id)
+    elif sort_by == "favorites_desc":
+        stmt = stmt.order_by(favorite_count.desc(), Product.id.desc())
+    elif sort_by == "newest":
+        stmt = stmt.order_by(Product.created_at.desc(), Product.id.desc())
     else:
         stmt = stmt.order_by(Product.is_featured.desc(), Product.id.desc())
 
     stmt = stmt.offset((page - 1) * page_size).limit(page_size)
     result = await db.execute(stmt)
-    products = result.scalars().all()
+    rows = result.all()
+    products = []
+    for product, count in rows:
+        product.favorite_count = int(count or 0)
+        products.append(product)
 
     # 多语言名称
     lang = get_lang(request)

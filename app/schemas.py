@@ -76,6 +76,7 @@ class ProductListOut(BaseModel):
     base_price: Decimal
     is_featured: bool
     sales_count: int
+    favorite_count: int = 0
     display_name: str = ""
 
 

@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>商品列表 - PyMall</title>
   <link rel="stylesheet" href="/static/css/jjshouse.css">
+  <style>
+    .sort-tabs { display:flex; align-items:center; gap:8px; overflow-x:auto; margin-top:18px; padding:4px 0 10px; border-bottom:1px solid var(--jjs-border); scrollbar-width:none; }
+    .sort-tabs::-webkit-scrollbar { display:none; }
+    .sort-tab { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; padding:10px 16px; border:0; border-radius:999px; background:#f7f7f7; color:#555; font-size:14px; cursor:pointer; transition:background .2s, color .2s; }
+    .sort-tab:hover { color:var(--jjs-primary); background:#fff0f4; }
+    .sort-tab.active { background:var(--jjs-primary); color:#fff; font-weight:700; }
+  </style>
 </head>
 <body>
   <div id="app">
@@ -25,23 +32,14 @@
     </div>
 
     <div class="container">
-      <!-- 高级筛选栏 -->
-      <div class="filter-bar" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;background:#fff;border:1px solid var(--jjs-border);border-radius:12px;padding:12px 16px">
-        <span style="font-size:13px;font-weight:600;color:var(--jjs-gray)"><base-icon name="filter" :size="14"></base-icon> {{ t('filter') }}</span>
-        <select v-model="sortBy" style="height:34px;border:1px solid var(--jjs-border);border-radius:8px;padding:0 8px;font-size:13px" @change="loadProducts()">
-          <option value="default">{{ t('sort_default') }}</option>
-          <option value="price_asc">{{ t('sort_price_asc') }}</option>
-          <option value="price_desc">{{ t('sort_price_desc') }}</option>
-          <option value="sales_desc">{{ t('sort_sales_desc') }}</option>
-        </select>
-        <input v-model.number="minPrice" type="number" min="0" :placeholder="t('min_price')"
-               style="width:110px;height:34px;border:1px solid var(--jjs-border);border-radius:8px;padding:0 8px;font-size:13px">
-        <span style="color:#999">—</span>
-        <input v-model.number="maxPrice" type="number" min="0" :placeholder="t('max_price')"
-               style="width:110px;height:34px;border:1px solid var(--jjs-border);border-radius:8px;padding:0 8px;font-size:13px">
-        <button class="btn btn-primary btn-sm" @click="applyFilter"><base-icon name="check" :size="14"></base-icon> {{ t('confirm') }}</button>
-        <button class="btn btn-ghost btn-sm" @click="resetFilter"><base-icon name="refresh" :size="14"></base-icon> {{ t('reset') }}</button>
-      </div>
+      <!-- TEMU 风格排序栏：点击排序项立即刷新商品列表 -->
+      <nav class="sort-tabs" aria-label="商品排序">
+        <button v-for="option in sortOptions" :key="option.value" class="sort-tab"
+                :class="{active: sortBy === option.value}" @click="selectSort(option.value)">
+          {{ option.label }}
+          <base-icon v-if="option.value !== 'default'" name="chevronDown" :size="13"></base-icon>
+        </button>
+      </nav>
 
       <div class="section-header" style="margin-top:26px">
         <div class="kicker">Products</div>
@@ -197,7 +195,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=16"></script>
+  <script src="/static/js/pymall.js?v=17"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -216,9 +214,7 @@
             loading: true,
             categoryId: Number(qs('category_id')) || null,
             keyword: qs('q') || '',
-            sortBy: 'default',
-            minPrice: null,
-            maxPrice: null,
+            sortBy: qs('sort_by') || 'default',
             detail: null,
             detailOpen: false,
             imgIdx: 0,
@@ -341,8 +337,6 @@
             var params = [];
             if (state.categoryId) params.push('category_id=' + state.categoryId);
             if (state.keyword) params.push('q=' + encodeURIComponent(state.keyword));
-            if (state.minPrice) params.push('min_price=' + state.minPrice);
-            if (state.maxPrice) params.push('max_price=' + state.maxPrice);
             if (state.sortBy && state.sortBy !== 'default') params.push('sort_by=' + state.sortBy);
             var path = '/api/products' + (params.length ? '?' + params.join('&') : '');
             return PyMall.api(path).then(function (data) {
@@ -355,7 +349,17 @@
             });
           }
 
-          function applyFilter() {
+          var sortOptions = [
+            { value: 'default', label: t('sort_default') },
+            { value: 'sales_desc', label: t('sort_sales_desc') },
+            { value: 'newest', label: t('sort_newest') },
+            { value: 'price_asc', label: t('sort_price_asc') },
+            { value: 'price_desc', label: t('sort_price_desc') },
+            { value: 'favorites_desc', label: t('sort_favorites_desc') },
+          ];
+
+          function selectSort(value) {
+            state.sortBy = value;
             updateUrl();
             loadProducts();
           }
@@ -371,8 +375,6 @@
             state.categoryId = null;
             state.keyword = '';
             state.sortBy = 'default';
-            state.minPrice = null;
-            state.maxPrice = null;
             updateUrl();
             loadProducts();
           }
@@ -381,6 +383,7 @@
             var p = [];
             if (state.categoryId) p.push('category_id=' + state.categoryId);
             if (state.keyword) p.push('q=' + encodeURIComponent(state.keyword));
+            if (state.sortBy && state.sortBy !== 'default') p.push('sort_by=' + encodeURIComponent(state.sortBy));
             history.replaceState(null, '', '/products.html' + (p.length ? '?' + p.join('&') : ''));
           }
 
@@ -499,15 +502,8 @@
               get: function () { return state.sortBy; },
               set: function (v) { state.sortBy = v; },
             }),
-            minPrice: Vue.computed({
-              get: function () { return state.minPrice; },
-              set: function (v) { state.minPrice = v; },
-            }),
-            maxPrice: Vue.computed({
-              get: function () { return state.maxPrice; },
-              set: function (v) { state.maxPrice = v; },
-            }),
-            applyFilter: applyFilter,
+            sortOptions: sortOptions,
+            selectSort: selectSort,
             detail: Vue.computed(function () { return state.detail; }),
             detailOpen: Vue.computed({
               get: function () { return state.detailOpen; },

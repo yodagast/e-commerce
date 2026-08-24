@@ -110,7 +110,7 @@
       // ---- 高级筛选 ----
       filter: '筛选', min_price: '最低价', max_price: '最高价', sort_by: '排序',
       sort_default: '默认排序', sort_price_asc: '价格从低到高', sort_price_desc: '价格从高到低',
-      sort_sales_desc: '销量优先', compare: '对比', no_wishlist: '暂无收藏',
+      sort_sales_desc: '销量优先', sort_newest: '新品上架', sort_favorites_desc: '收藏最多', compare: '对比', no_wishlist: '暂无收藏',
       confirm: '确定', reset: '重置',
       // ---- 邮箱验证码 ----
       verify_code: '验证码', verify_code_ph: '6 位数字验证码', send_code: '发送验证码',
@@ -224,7 +224,7 @@
       // ---- 高级筛选 ----
       filter: 'Filter', min_price: 'Min Price', max_price: 'Max Price', sort_by: 'Sort By',
       sort_default: 'Default', sort_price_asc: 'Price: Low to High', sort_price_desc: 'Price: High to Low',
-      sort_sales_desc: 'Best Selling', compare: 'Compare', no_wishlist: 'No wishlist items',
+      sort_sales_desc: 'Best Selling', sort_newest: 'New Arrivals', sort_favorites_desc: 'Most Wished', compare: 'Compare', no_wishlist: 'No wishlist items',
       confirm: 'Apply', reset: 'Reset',
       // ---- Email verification code ----
       verify_code: 'Verification Code', verify_code_ph: '6-digit code',
