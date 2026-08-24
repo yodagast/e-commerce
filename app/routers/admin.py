@@ -140,6 +140,8 @@ async def admin_create_product(
 
     product = Product(
         sku_code=payload.sku_code,
+        brand=payload.brand,
+        weight_kg=payload.weight_kg,
         name_i18n={"zh": payload.name_zh, "en": payload.name_en or ""},
         description_i18n={"zh": payload.description_zh, "en": payload.description_en or ""},
         category_id=payload.category_id,
@@ -190,11 +192,13 @@ async def admin_update_product(
     if not product:
         raise HTTPException(status_code=404, detail="商品不存在")
 
-    if payload.category_id is not None:
+    if "category_id" in payload.model_fields_set and payload.category_id is not None:
         cat_exists = await db.execute(select(Category).where(Category.id == payload.category_id))
         if not cat_exists.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="分类不存在")
         product.category_id = payload.category_id
+    elif "category_id" in payload.model_fields_set:
+        product.category_id = None
 
     if payload.name_zh is not None or payload.name_en is not None:
         name = dict(product.name_i18n or {})
@@ -204,6 +208,11 @@ async def admin_update_product(
             name["en"] = payload.name_en
         product.name_i18n = name
 
+    if "brand" in payload.model_fields_set:
+        product.brand = payload.brand or None
+    if "weight_kg" in payload.model_fields_set:
+        product.weight_kg = payload.weight_kg
+
     if payload.description_zh is not None or payload.description_en is not None:
         desc = dict(product.description_i18n or {})
         if payload.description_zh is not None:
@@ -212,9 +221,9 @@ async def admin_update_product(
             desc["en"] = payload.description_en
         product.description_i18n = desc
 
-    if payload.main_image is not None:
+    if "main_image" in payload.model_fields_set:
         product.main_image = payload.main_image or None
-    if payload.images is not None:
+    if "images" in payload.model_fields_set:
         product.images = [i for i in payload.images if i]
     if payload.base_price is not None:
         product.base_price = payload.base_price

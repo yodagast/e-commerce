@@ -56,12 +56,20 @@ PAGE_ASSERTS = {
     "admin.html": [
         "admin",                 # 后台
     ],
+    "admin-product-edit.html": [
+        "商品图片",              # 商品媒体编辑
+        "详情描述（中文）",      # 商品详情编辑
+        "SKU 与库存",            # SKU 库存编辑
+        "saveProduct",           # 保存逻辑
+        "系统自动生成",          # SKU 不允许手动编辑
+        "params.get('new')",     # 新增商品独立页面模式
+    ],
     "about.html": [
         "mountPyMall",
         "story-section",           # 品牌故事区块
         "discover-section",        # Discover 三板块
         "milestones",              # 成长历程
-        "join-band",               # 社区订阅
+        "site-footer",             # 页脚（含统一邮箱订阅入口）
         "about-hero",              # Hero 区域
     ],
     "wishlist.html": [

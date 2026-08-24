@@ -52,6 +52,7 @@ class SKUOut(BaseModel):
     sku_code: str
     attributes: dict[str, Any]
     price: Decimal
+    stock: int
     available_stock: int
     is_active: bool
 
@@ -393,6 +394,8 @@ class AdminCustomerOut(BaseModel):
 class ProductCreateIn(BaseModel):
     category_id: int | None = None
     sku_code: str
+    brand: str | None = None
+    weight_kg: Decimal | None = None
     name_zh: str
     name_en: str = ""
     description_zh: str = ""
@@ -409,6 +412,8 @@ class ProductUpdateIn(BaseModel):
     category_id: int | None = None
     name_zh: str | None = None
     name_en: str | None = None
+    brand: str | None = None
+    weight_kg: Decimal | None = None
     description_zh: str | None = None
     description_en: str | None = None
     main_image: str | None = None

@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.deps import require_admin
 from app.i18n import get_lang
-from app.models import AdminUser, SiteBanner
+from app.models import AdminUser, SiteBanner, SiteContent
 
 router = APIRouter(prefix="/api", tags=["cms"])
 
@@ -98,9 +98,97 @@ async def get_site_content(
     page: str = Query("home"),
     db: AsyncSession = Depends(get_db),
 ):
-    """前台公开：读取页面文字内容（未配置时返回默认值）"""
-    content = DEFAULT_CMS_CONTENT.get(page, {})
-    return content
+    """前台公开：读取页面文字内容（DB 持久化内容优先，未配置时回退默认值）"""
+    return await _load_page_content_async(db, page)
+
+
+# ---------- 页面内容持久化（SiteContent） ----------
+
+def _flatten_content(page: str, content: dict, prefix: str = "") -> list[tuple[str, dict | str]]:
+    """递归把页面内容扁平化为 (key, value)。
+
+    叶子规则：
+    - dict 且键 ⊆ {zh, en} → 多语言内容，整体保存
+    - dict（其他键）→ 容器，递归展开（key 用 '.' 连接）
+    - 标量（str/int/bool/URL）→ 直接保存原值
+    """
+    out: list[tuple[str, dict | str]] = []
+    for k, v in content.items():
+        key = f"{page}:{prefix}{k}" if prefix else f"{page}:{k}"
+        if isinstance(v, dict):
+            # 多语言叶子：{"zh","en"} → 整体保存
+            if set(v.keys()) <= {"zh", "en"} and v:
+                out.append((key, v))
+            else:
+                out.extend(_flatten_content(page, v, prefix=f"{key.split(':', 1)[1]}."))
+        else:
+            out.append((key, v))
+    return out
+
+
+def _unflatten_content(rows, page: str) -> dict:
+    """把 DB 行 (key, value) 还原为页面嵌套 dict"""
+    merged: dict = {}
+    for r in rows:
+        parts = r.key.split(":")
+        if len(parts) < 2:
+            continue
+        rest = parts[1]  # "story_title" 或 "benefits.free_ship" 或 "story.image"
+        segments = rest.split(".")
+        node = merged
+        for i, seg in enumerate(segments[:-1]):
+            node = node.setdefault(seg, {})
+        node[segments[-1]] = r.value
+    return merged
+
+
+async def _load_page_content_async(db: AsyncSession, page: str) -> dict:
+    """从 SiteContent 表加载页面内容，DB 值覆盖默认值"""
+    defaults = DEFAULT_CMS_CONTENT.get(page, {})
+    if page not in DEFAULT_CMS_CONTENT:
+        return defaults
+
+    result = await db.execute(
+        select(SiteContent).where(SiteContent.key.like(f"{page}:%"))
+    )
+    rows = result.scalars().all()
+    if not rows:
+        return defaults
+
+    merged = _unflatten_content(rows, page)
+
+    # DB 值覆盖默认值（默认值兜底未配置部分）
+    def _overlay(base, patch):
+        if isinstance(base, dict) and isinstance(patch, dict):
+            out = dict(base)
+            for k, v in patch.items():
+                out[k] = _overlay(base.get(k), v) if isinstance(v, dict) and isinstance(base.get(k), dict) else v
+            return out
+        return patch
+
+    return _overlay(defaults, merged)
+
+
+async def _save_page_content(db: AsyncSession, page: str, content: dict) -> None:
+    """将页面内容扁平化写入 SiteContent 表（幂等 upsert）"""
+    existing_result = await db.execute(
+        select(SiteContent).where(SiteContent.key.like(f"{page}:%"))
+    )
+    existing = {r.key: r for r in existing_result.scalars().all()}
+
+    pending = _flatten_content(page, content)
+    keys_seen: set[str] = set()
+    for key, val in pending:
+        keys_seen.add(key)
+        if key in existing:
+            existing[key].value = val
+        else:
+            db.add(SiteContent(key=key, value=val))
+
+    for key, row in existing.items():
+        if key not in keys_seen:
+            await db.delete(row)
+    await db.commit()
 
 
 # ---------- 管理接口 ----------
@@ -196,27 +284,32 @@ async def admin_get_cms_content(
     admin: AdminUser = Depends(require_admin()),
     db: AsyncSession = Depends(get_db),
 ):
-    return DEFAULT_CMS_CONTENT.get(page, {})
+    """后台读取：DB 持久化内容优先，未配置回退默认值"""
+    return await _load_page_content_async(db, page)
 
 
 @router.put("/admin/cms-content")
 async def admin_put_cms_content(
     payload: dict,
-    admin: AdminUser = Depends(require_admin()),
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
-    """保存页面文字内容（内存态：DEFAULT_CMS_CONTENT 合并更新，重启后保留在种子内）"""
+    """保存页面文字/图片内容（持久化到 SiteContent 表，重启不丢失）"""
     page = str(payload.get("page") or "home")
     content = payload.get("content") or {}
-    DEFAULT_CMS_CONTENT.setdefault(page, {})
-    _deep_merge(DEFAULT_CMS_CONTENT[page], content)
+    # 合并：仅覆盖传入的字段，其余保留 DB/默认值
+    base = await _load_page_content_async(db, page)
+    merged = _deep_merge(base, content)
+    await _save_page_content(db, page, merged)
     return {"message": "已保存", "page": page}
 
 
-def _deep_merge(base: dict, patch: dict) -> None:
-    """递归合并，patch 覆盖 base 的叶子值"""
+def _deep_merge(base: dict, patch: dict) -> dict:
+    """递归合并，patch 覆盖 base 的叶子值，返回新 dict"""
+    result = dict(base)
     for k, v in patch.items():
-        if isinstance(v, dict) and isinstance(base.get(k), dict):
-            _deep_merge(base[k], v)
+        if isinstance(v, dict) and isinstance(result.get(k), dict):
+            result[k] = _deep_merge(result[k], v)
         else:
-            base[k] = v
+            result[k] = v
+    return result

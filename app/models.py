@@ -409,6 +409,25 @@ class SiteBanner(Base):
         return self.button_text_i18n.get(lang) or self.button_text_i18n.get("zh", "")
 
 
+class SiteContent(Base):
+    """站点内容（页面文字/图片 KV）持久化存储
+
+    对应首页/关于页等区块内容，key 形如 page:section.field（如 about:story.content），
+    value 为 JSON（多语言用 {"zh": "...", "en": "..."} 或叶子值）。
+    后台 ERP「内容管理」修改后写入数据库，重启不丢失。
+    """
+    __tablename__ = "site_contents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # 形如 about:story.content，唯一键
+    key: Mapped[str] = mapped_column(String(200), unique=True, index=True)
+    value: Mapped[dict] = mapped_column(JSON, default=dict)  # {"zh": "...", "en": "..."}
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+
 class NewsletterSubscriber(Base):
     """新闻订阅者（首页/页脚「订阅优惠信息」）"""
     __tablename__ = "newsletter_subscribers"

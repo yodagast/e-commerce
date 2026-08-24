@@ -338,60 +338,11 @@
       line-height: 1.8;
     }
 
-    /* 社区订阅（仿 POP MART JOIN THE COMMUNITY） */
-    .join-band {
-      position: relative;
-      background: linear-gradient(120deg, var(--jjs-primary) 0%, #a0144a 100%);
-      color: #fff;
-      padding: 64px 20px;
-      text-align: center;
-    }
-    .join-band h2 {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
-    .join-band p {
-      opacity: 0.9;
-      margin-bottom: 26px;
-      font-size: 14px;
-    }
-    .join-form {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-    .join-form input {
-      flex: 1;
-      padding: 13px 18px;
-      border-radius: 999px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    .join-form button {
-      background: var(--jjs-dark);
-      color: #fff;
-      padding: 13px 30px;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 14px;
-      transition: opacity 0.2s;
-    }
-    .join-form button:hover {
-      opacity: 0.85;
-    }
-
     @media (max-width: 900px) {
       .story-grid { grid-template-columns: 1fr; gap: 28px; }
       .discover-grid { grid-template-columns: 1fr; }
       .milestones-grid { grid-template-columns: repeat(2, 1fr); }
       .values-grid { grid-template-columns: 1fr; }
-      .join-form { flex-direction: column; align-items: stretch; }
     }
   </style>
 </head>
@@ -409,19 +360,19 @@
       </div>
     </section>
 
-    <!-- 品牌故事 -->
+    <!-- 品牌故事（内容由后台 ERP「内容管理」维护） -->
     <section class="story-section">
       <div class="container">
         <div class="story-grid">
           <div>
             <div class="kicker">{{ t('our_story_kicker') }}</div>
-            <h2>{{ t('our_story') }}</h2>
-            <p class="story-p">{{ t('our_story_p1') }}</p>
-            <p class="story-p">{{ t('our_story_p2') }}</p>
+            <h2>{{ storyTitle }}</h2>
+            <p class="story-p" v-for="(para, i) in storyParagraphs" :key="i">{{ para }}</p>
             <p class="story-p">{{ t('mission_desc') }}</p>
           </div>
           <div class="story-visual">
-            <img src="https://picsum.photos/seed/pymall-story/760/500" alt="Story">
+            <img v-if="storyImage" :src="storyImage" alt="Story">
+            <img v-else src="https://picsum.photos/seed/pymall-story/760/500" alt="Story">
             <span class="sv-tag">PyMall</span>
           </div>
         </div>
@@ -535,15 +486,7 @@
       </div>
     </section>
 
-    <!-- 加入社区 -->
-    <section class="join-band">
-      <h2><base-icon name="mail" :size="20"></base-icon> {{ t('join_title') }}</h2>
-      <p>{{ t('join_desc') }}</p>
-      <div class="join-form">
-        <input :placeholder="t('join_ph')" v-model="email">
-        <button @click="sub">{{ t('join_btn') }}</button>
-      </div>
-    </section>
+    <!-- 邮箱订阅统一由页脚「订阅优惠信息」提供（SiteFooter 组件），此处不再重复展示 -->
 
     <site-footer></site-footer>
     <auth-modal></auth-modal>
@@ -559,24 +502,35 @@
 
       window.mountPyMall({
         setup() {
-          var state = Vue.reactive({ email: '' });
+          // 品牌故事内容（后台 ERP「内容管理」维护，前端实时展示）
+          var state = Vue.reactive({
+            storyTitle: t('our_story'),
+            storyParagraphs: [t('our_story_p1'), t('our_story_p2')],
+            storyImage: '',
+          });
 
-          function sub() {
-            if (!state.email) { PyMall.toast(t('join_ph'), 'error'); return; }
-            var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRe.test(state.email)) { PyMall.toast(t('invalid_email'), 'error'); return; }
-            PyMall.api('/api/subscribe', { method: 'POST', noLang: true, body: { email: state.email } })
-              .then(function (d) {
-                PyMall.toast(d.message || t('join_ok'), 'success');
-                state.email = '';
-              })
-              .catch(function (e) { PyMall.toast(e.message, 'error'); });
-          }
+          PyMall.api('/api/site-content?page=about', { noLang: true })
+            .then(function (d) {
+              if (!d) return;
+              var lang = PyMall.getLang();
+              if (d.story_title) state.storyTitle = d.story_title[lang] || d.story_title.zh || state.storyTitle;
+              if (d.story_content) {
+                var c = d.story_content[lang] || d.story_content.zh || '';
+                if (c) state.storyParagraphs = c.split('\n').filter(function (x) { return x.trim(); });
+              }
+              if (d.story) {
+                var si = d.story.image;
+                if (typeof si === 'object' && si) si = si.zh || si.en || '';
+                if (si) state.storyImage = si;
+              }
+            })
+            .catch(function () { /* 保持默认文案 */ });
 
           return {
             t: t,
-            email: Vue.computed(function () { return state.email; }),
-            sub: sub,
+            storyTitle: Vue.computed(function () { return state.storyTitle; }),
+            storyParagraphs: Vue.computed(function () { return state.storyParagraphs; }),
+            storyImage: Vue.computed(function () { return state.storyImage; }),
           };
         },
       });

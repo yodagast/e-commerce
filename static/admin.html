@@ -24,6 +24,7 @@
       <a href="javascript:void(0)" data-view="orders"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>订单管理</a>
       <a href="javascript:void(0)" data-view="customers"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>用户管理</a>
       <a href="javascript:void(0)" data-view="newsletter"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>订阅管理</a>
+      <a href="javascript:void(0)" data-view="cms"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>内容管理</a>
       <a href="javascript:void(0)" data-view="admins" id="nav-admins" class="hidden"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>管理员权限</a>
       <a href="javascript:void(0)" id="admin-logout" class="nav-logout"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>退出登录</a>
     </aside>
@@ -38,6 +39,73 @@
           <button class="btn btn-primary" id="add-product-btn">新增商品</button>
         </div>
         <div id="product-table"></div>
+      </div>
+      <!-- 商品编辑模态框 -->
+      <div id="product-modal" class="modal-mask hidden">
+        <div class="modal-panel" style="max-width:640px;max-height:92vh;overflow:auto">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 id="product-modal-title">新增商品</h3>
+            <button class="btn btn-outline btn-sm" onclick="Admin.closeProductModal()">✕</button>
+          </div>
+          <div class="form-group">
+            <label>SKU 编码</label>
+            <input type="text" id="pf-sku" placeholder="如 PHONE-002" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>名称（中文）</label>
+            <input type="text" id="pf-name-zh" placeholder="商品名称" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>名称（英文）</label>
+            <input type="text" id="pf-name-en" placeholder="Product Name" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>描述（中文）</label>
+            <textarea id="pf-desc-zh" rows="3" placeholder="商品详情描述..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="form-group">
+            <label>描述（英文）</label>
+            <textarea id="pf-desc-en" rows="3" placeholder="Product Description..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
+          </div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:180px">
+              <label>分类</label>
+              <select id="pf-category" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%"><option value="">未分类</option></select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:150px">
+              <label>基础价格</label>
+              <input type="number" step="0.01" min="0" id="pf-price" placeholder="如 399.00" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>主图</label>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div style="width:110px;height:90px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;background:#f8fafc;display:flex;align-items:center;justify-content:center">
+                <img id="pf-main-image-preview" src="" alt="" style="max-width:100%;max-height:100%;display:none;object-fit:cover">
+                <span id="pf-main-image-empty" style="font-size:12px;color:#94a3b8">未设置</span>
+              </div>
+              <div>
+                <input type="file" id="pf-main-image-file" accept="image/*" style="display:none">
+                <button class="btn btn-outline" id="pf-main-image-btn">上传主图</button>
+                <button class="btn btn-danger btn-sm" id="pf-main-image-remove" style="margin-left:8px;display:none">移除</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>轮播图（点击下方按钮上传多张，用于商品详情页画廊）</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap" id="pf-gallery"></div>
+            <input type="file" id="pf-gallery-file" accept="image/*" multiple style="display:none">
+            <button class="btn btn-outline btn-sm" id="pf-gallery-add" style="margin-top:10px">+ 添加图片</button>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 14px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" id="pf-featured"> 设为推荐（首页展示）</label>
+          </div>
+          <div style="display:flex;gap:12px">
+            <button class="btn btn-primary" id="pf-save">保存商品</button>
+            <button class="btn btn-outline" onclick="Admin.closeProductModal()">取消</button>
+            <span id="pf-status" style="font-size:13px;color:#64748b;align-self:center"></span>
+          </div>
+        </div>
       </div>
       <div id="view-orders" class="hidden">
         <h2 style="margin-bottom:16px">订单管理</h2>
@@ -72,6 +140,57 @@
         </div>
         <!-- 订阅者列表 -->
         <div id="subscriber-table"></div>
+      </div>
+      <div id="view-cms" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <h2>内容管理</h2>
+          <span style="font-size:13px;color:#64748b">编辑品牌故事标题、正文与配图，保存后前台「关于我们」页实时生效</span>
+        </div>
+        <!-- 品牌故事编辑 -->
+        <div class="card" style="padding:20px;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+          <h3 style="margin-bottom:16px">品牌故事</h3>
+          <div class="form-group">
+            <label>标题（中文）</label>
+            <input type="text" id="cms-story-title-zh" placeholder="品牌故事" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>标题（英文）</label>
+            <input type="text" id="cms-story-title-en" placeholder="Brand Story" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%">
+          </div>
+          <div class="form-group">
+            <label>正文（中文）</label>
+            <textarea id="cms-story-content-zh" rows="4" placeholder="品牌故事正文..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="form-group">
+            <label>正文（英文）</label>
+            <textarea id="cms-story-content-en" rows="4" placeholder="Brand story content..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
+          </div>
+          <div class="form-group">
+            <label>品牌故事配图</label>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div style="width:150px;height:110px;border:1px solid var(--jjs-border,#e2e8f0);border-radius:10px;overflow:hidden;background:#f8fafc;display:flex;align-items:center;justify-content:center">
+                <img id="cms-story-image-preview" src="" alt="" style="max-width:100%;max-height:100%;display:none;object-fit:cover">
+                <span id="cms-story-image-empty" style="font-size:12px;color:#94a3b8">未设置图片</span>
+              </div>
+              <div>
+                <input type="file" id="cms-story-image-file" accept="image/*" style="display:none">
+                <button class="btn btn-outline" id="cms-story-image-btn">上传图片</button>
+                <button class="btn btn-danger btn-sm" id="cms-story-image-remove" style="margin-left:8px;display:none">移除</button>
+                <div style="font-size:12px;color:#94a3b8;margin-top:6px">建议 760×500，支持 jpg/png/webp，≤5MB</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+            <button class="btn btn-primary" id="cms-story-save">保存品牌故事</button>
+            <span id="cms-story-status" style="font-size:13px;color:#64748b"></span>
+          </div>
+        </div>
+        <!-- 首页轮播管理简要入口 -->
+        <div class="card" style="padding:20px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
+          <h3 style="margin-bottom:8px">首页轮播</h3>
+          <p style="font-size:13px;color:#64748b;margin-bottom:14px">管理首页 Hero 轮播图（标题/副标题/图片/跳转链接）</p>
+          <div id="cms-banner-list"></div>
+        </div>
       </div>
       <div id="view-admins" class="hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -122,6 +241,7 @@
             loadProducts();
             loadOrders();
             loadCustomers();
+            loadCategoryOptions();
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
       }
@@ -166,6 +286,9 @@
           .then(function (list) {
             var canWrite = adminRole === 'superadmin' || adminRole === 'operator';
             var rows = list.map(function (p) {
+              var imgHtml = p.main_image
+                ? '<img src="' + p.main_image + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">'
+                : '<span style="color:#cbd5e1">无图</span>';
               var skus = (p.skus || []).map(function (s) {
                 var stockInp = canWrite
                   ? '<input type="number" value="' + s.stock + '" onchange="Admin.stock(' + s.id + ',this.value)" style="width:80px" data-need-write>'
@@ -174,15 +297,19 @@
                   + '<td>' + stockInp + '</td>'
                   + '<td>' + (s.available_stock) + '</td></tr>';
               }).join('');
+              var editBtn = canWrite
+                ? '<button class="btn btn-outline btn-sm" onclick="Admin.editProduct(' + p.id + ')">编辑</button>' : '';
               var delBtn = canWrite
                 ? '<button class="btn btn-danger btn-sm" onclick="Admin.delProduct(' + p.id + ')">删除</button>' : '';
-              return '<tr><td>' + p.id + '</td><td>' + (p.name_i18n.zh || p.sku_code) + '</td><td>' + App.money(p.base_price) + '</td>'
-                + '<td>' + p.status + '</td><td><table class="admin-table" style="margin:0">' + skus + '</table></td>'
-                + '<td class="actions-cell">' + delBtn + '</td></tr>';
+              var featuredTag = p.is_featured ? '<span class="badge" style="background:#fef3c7;color:#92400e">推荐</span>' : '';
+              return '<tr><td>' + p.id + '</td><td>' + imgHtml + '</td><td>' + (p.name_i18n.zh || p.sku_code) + '</td>'
+                + '<td>' + App.money(p.base_price) + '</td>'
+                + '<td>' + p.status + ' ' + featuredTag + '</td><td><table class="admin-table" style="margin:0"><thead><tr><th>SKU</th><th>售价</th><th>调整库存</th><th>可售库存</th></tr></thead><tbody>' + skus + '</tbody></table></td>'
+                + '<td class="actions-cell">' + editBtn + ' ' + delBtn + '</td></tr>';
             }).join('');
             document.getElementById('product-table').innerHTML =
-              '<table class="admin-table"><thead><tr><th>ID</th><th>名称</th><th>基础价</th><th>状态</th><th>SKU</th><th>操作</th></tr></thead><tbody>'
-              + (rows || '<tr><td colspan="6">暂无</td></tr>') + '</tbody></table>';
+              '<table class="admin-table"><thead><tr><th>ID</th><th>图</th><th>名称</th><th>基础价</th><th>状态</th><th>SKU（售价 / 库存 / 可售）</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="7">暂无</td></tr>') + '</tbody></table>';
             applyRoleUI();
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
@@ -285,6 +412,135 @@
           .catch(function (e) { App.toast(e.message, 'error'); });
       }
 
+      // ---------- 商品编辑模态框 ----------
+      var productForm = {
+        id: null,
+        mainImage: '',
+        gallery: [],
+        skuCode: '',
+      };
+      var categoriesCache = [];
+
+      function uploadImageFile(file) {
+        // 用 FormData 上传，返回 Promise<url>
+        return new Promise(function (resolve, reject) {
+          var fd = new FormData();
+          fd.append('file', file);
+          fetch('/api/upload?kind=image', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + adminToken },
+            body: fd,
+          }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (data) {
+              if (res.ok) resolve(data.url);
+              else reject(new Error(data.detail || '上传失败'));
+            });
+          }).catch(reject);
+        });
+      }
+
+      function openProductModal(product) {
+        productForm.id = product ? product.id : null;
+        productForm.mainImage = product ? (product.main_image || '') : '';
+        productForm.gallery = product ? (product.images || []).slice() : [];
+        productForm.skuCode = product ? product.sku_code : '';
+        document.getElementById('product-modal-title').textContent = product ? '编辑商品 #' + product.id : '新增商品';
+        document.getElementById('pf-sku').value = productForm.skuCode;
+        document.getElementById('pf-name-zh').value = product ? (product.name_i18n.zh || '') : '';
+        document.getElementById('pf-name-en').value = product ? (product.name_i18n.en || '') : '';
+        document.getElementById('pf-desc-zh').value = product ? (product.description_i18n.zh || '') : '';
+        document.getElementById('pf-desc-en').value = product ? (product.description_i18n.en || '') : '';
+        document.getElementById('pf-price').value = product ? product.base_price : '';
+        document.getElementById('pf-featured').checked = product ? !!product.is_featured : false;
+        // 分类下拉
+        var sel = document.getElementById('pf-category');
+        sel.innerHTML = '<option value="">未分类</option>' + categoriesCache.map(function (c) {
+          return '<option value="' + c.id + '"' + (product && product.category_id === c.id ? ' selected' : '') + '>' + (c.name_i18n.zh || c.code) + '</option>';
+        }).join('');
+        renderMainImage();
+        renderGallery();
+        document.getElementById('product-modal').classList.remove('hidden');
+      }
+
+      function closeProductModal() {
+        document.getElementById('product-modal').classList.add('hidden');
+      }
+
+      function renderMainImage() {
+        var img = document.getElementById('pf-main-image-preview');
+        var empty = document.getElementById('pf-main-image-empty');
+        var removeBtn = document.getElementById('pf-main-image-remove');
+        if (productForm.mainImage) {
+          img.src = productForm.mainImage;
+          img.style.display = '';
+          empty.style.display = 'none';
+          removeBtn.style.display = '';
+        } else {
+          img.style.display = 'none';
+          empty.style.display = '';
+          removeBtn.style.display = 'none';
+        }
+      }
+
+      function renderGallery() {
+        var wrap = document.getElementById('pf-gallery');
+        wrap.innerHTML = productForm.gallery.map(function (url, i) {
+          return '<div style="position:relative;width:86px;height:86px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">'
+            + '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover">'
+            + '<button class="btn btn-danger btn-sm" style="position:absolute;top:4px;right:4px;padding:2px 6px;font-size:11px" onclick="Admin.removeGalleryImage(' + i + ')">✕</button>'
+            + '</div>';
+        }).join('');
+      }
+
+      function removeGalleryImage(idx) {
+        productForm.gallery.splice(idx, 1);
+        renderGallery();
+      }
+
+      function editProduct(id) {
+        location.href = '/admin-product-edit.html?id=' + encodeURIComponent(id);
+      }
+
+      function saveProduct() {
+        var sku = document.getElementById('pf-sku').value.trim();
+        var nameZh = document.getElementById('pf-name-zh').value.trim();
+        var nameEn = document.getElementById('pf-name-en').value.trim();
+        var descZh = document.getElementById('pf-desc-zh').value.trim();
+        var descEn = document.getElementById('pf-desc-en').value.trim();
+        var price = document.getElementById('pf-price').value;
+        var categoryId = document.getElementById('pf-category').value;
+        var featured = document.getElementById('pf-featured').checked;
+        if (!sku) { App.toast('请填写 SKU 编码', 'error'); return; }
+        if (!nameZh) { App.toast('请填写商品名称（中文）', 'error'); return; }
+        if (!price || Number(price) <= 0) { App.toast('请填写有效价格', 'error'); return; }
+
+        var body = {
+          sku_code: sku,
+          name_zh: nameZh,
+          name_en: nameEn,
+          description_zh: descZh,
+          description_en: descEn,
+          base_price: Number(price),
+          category_id: categoryId ? Number(categoryId) : null,
+          main_image: productForm.mainImage || null,
+          images: productForm.gallery,
+          is_featured: featured,
+        };
+        var req;
+        if (productForm.id) {
+          req = api('/api/admin/products/' + productForm.id, { method: 'PUT', body: body });
+        } else {
+          body.status = 'active';
+          body.skus = [{ sku_code: sku, price: Number(price), stock: 100, attributes: {} }];
+          req = api('/api/admin/products', { method: 'POST', body: body });
+        }
+        req.then(function () {
+          App.toast(productForm.id ? '商品已更新' : '商品已创建', 'success');
+          closeProductModal();
+          loadProducts(); loadDashboard();
+        }).catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
       function viewOrder(orderNo) {
         location.href = '/admin-order-detail.html?order_no=' + encodeURIComponent(orderNo);
       }
@@ -376,6 +632,108 @@
         }).catch(function (e) { App.toast(e.message, 'error'); });
       }
 
+      // ---------- 内容管理（品牌故事 / 首页轮播） ----------
+      function loadCmsContent() {
+        api('/api/admin/cms-content?page=about')
+          .then(function (d) {
+            var story = d.story || {};
+            document.getElementById('cms-story-title-zh').value = (d.story_title && d.story_title.zh) || '';
+            document.getElementById('cms-story-title-en').value = (d.story_title && d.story_title.en) || '';
+            document.getElementById('cms-story-content-zh').value = (d.story_content && d.story_content.zh) || '';
+            document.getElementById('cms-story-content-en').value = (d.story_content && d.story_content.en) || '';
+            var img = story.image || '';
+            renderCmsStoryImage(img);
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+        loadBannerList();
+      }
+
+      function renderCmsStoryImage(url) {
+        var img = document.getElementById('cms-story-image-preview');
+        var empty = document.getElementById('cms-story-image-empty');
+        var removeBtn = document.getElementById('cms-story-image-remove');
+        if (url) {
+          img.src = url; img.style.display = ''; empty.style.display = 'none'; removeBtn.style.display = '';
+        } else {
+          img.style.display = 'none'; empty.style.display = ''; removeBtn.style.display = 'none';
+        }
+      }
+
+      // 首页轮播管理
+      function loadBannerList() {
+        api('/api/admin/banners?placement=home_hero')
+          .then(function (list) {
+            var wrap = document.getElementById('cms-banner-list');
+            var rows = (list || []).map(function (b) {
+              var imgHtml = b.image_url
+                ? '<img src="' + b.image_url + '" style="width:64px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'">'
+                : '<span style="color:#cbd5e1;font-size:12px">无图</span>';
+              var act = '<button class="btn btn-outline btn-sm" onclick="Admin.editBanner(' + b.id + ')">编辑</button> '
+                + '<button class="btn btn-danger btn-sm" onclick="Admin.delBanner(' + b.id + ')">删除</button>';
+              return '<tr><td>' + b.id + '</td><td>' + imgHtml + '</td><td>' + (b.title || '-') + '</td>'
+                + '<td>' + (b.subtitle || '-') + '</td><td>' + (b.is_active ? '<span class="badge" style="background:#dcfce7;color:#166534">启用</span>' : '<span class="badge" style="background:#e2e8f0;color:#475569">停用</span>') + '</td>'
+                + '<td class="actions-cell">' + act + '</td></tr>';
+            }).join('');
+            wrap.innerHTML =
+              '<table class="admin-table"><thead><tr><th>ID</th><th>图</th><th>标题</th><th>副标题</th><th>状态</th><th>操作</th></tr></thead><tbody>'
+              + (rows || '<tr><td colspan="6">暂无轮播，可在首页代码中配置</td></tr>') + '</tbody></table>'
+              + '<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="Admin.addBanner()">+ 新增轮播</button>';
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function addBanner() {
+        var title = prompt('轮播标题（中文）');
+        if (title === null) return;
+        var subtitle = prompt('轮播副标题', '');
+        var linkUrl = prompt('跳转链接（如 /products.html）', '');
+        var imgUrl = prompt('图片 URL（可先上传后粘贴）', '');
+        api('/api/admin/banners', {
+          method: 'POST',
+          body: {
+            placement: 'home_hero',
+            title_i18n: { zh: title, en: title },
+            subtitle_i18n: { zh: subtitle || '', en: '' },
+            image_url: imgUrl || null,
+            link_url: linkUrl || null,
+            sort_order: 0,
+            is_active: true,
+          },
+        }).then(function () { App.toast('轮播已创建', 'success'); loadBannerList(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function editBanner(id) {
+        api('/api/admin/banners?placement=home_hero')
+          .then(function (list) {
+            var b = list.filter(function (x) { return x.id === id; })[0];
+            if (!b) { App.toast('轮播不存在', 'error'); return; }
+            var title = prompt('轮播标题（中文）', b.title || '');
+            if (title === null) return;
+            var subtitle = prompt('轮播副标题', b.subtitle || '');
+            var linkUrl = prompt('跳转链接', b.link_url || '');
+            var imgUrl = prompt('图片 URL', b.image_url || '');
+            api('/api/admin/banners/' + id, {
+              method: 'PUT',
+              body: {
+                title_i18n: { zh: title, en: title },
+                subtitle_i18n: { zh: subtitle || '', en: '' },
+                image_url: imgUrl || null,
+                link_url: linkUrl || null,
+              },
+            }).then(function () { App.toast('轮播已更新', 'success'); loadBannerList(); })
+              .catch(function (e) { App.toast(e.message, 'error'); });
+          })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
+      function delBanner(id) {
+        if (!confirm('确认删除该轮播？')) return;
+        api('/api/admin/banners/' + id, { method: 'DELETE' })
+          .then(function () { App.toast('轮播已删除', 'success'); loadBannerList(); })
+          .catch(function (e) { App.toast(e.message, 'error'); });
+      }
+
       function switchView(v) {
         document.querySelectorAll('#admin-app [data-view]').forEach(function (a) {
           a.classList.toggle('active', a.getAttribute('data-view') === v);
@@ -385,10 +743,12 @@
         document.getElementById('view-orders').classList.toggle('hidden', v !== 'orders');
         document.getElementById('view-customers').classList.toggle('hidden', v !== 'customers');
         document.getElementById('view-newsletter').classList.toggle('hidden', v !== 'newsletter');
+        document.getElementById('view-cms').classList.toggle('hidden', v !== 'cms');
         document.getElementById('view-admins').classList.toggle('hidden', v !== 'admins');
         // 延迟加载
         if (v === 'customers') loadCustomers(document.getElementById('customer-search').value);
         if (v === 'newsletter') loadSubscribers();
+        if (v === 'cms') loadCmsContent();
         if (v === 'admins') loadAdmins();
       }
 
@@ -397,28 +757,14 @@
         toggleCustomer: toggleCustomer, delCustomer: delCustomer,
         addAdmin: addAdmin, editAdmin: editAdmin, delAdmin: delAdmin,
         delSubscriber: delSubscriber,
+        editProduct: editProduct, closeProductModal: closeProductModal,
+        removeGalleryImage: removeGalleryImage,
+        addBanner: addBanner, editBanner: editBanner, delBanner: delBanner,
       };
 
       document.getElementById('admin-login-btn').onclick = login;
       document.getElementById('add-product-btn').onclick = function () {
-        var name = prompt('商品名称(中文)');
-        if (!name) return;
-        var price = prompt('基础价格');
-        if (!price) return;
-        var skuCode = prompt('SKU 编码');
-        if (!skuCode) return;
-        var stock = prompt('初始库存', '100');
-        api('/api/admin/products', {
-          method: 'POST',
-          body: {
-            sku_code: skuCode,
-            name_i18n: { zh: name, en: '' },
-            description_i18n: { zh: '', en: '' },
-            base_price: Number(price),
-            skus: [{ sku_code: skuCode, price: Number(price), stock: Number(stock || 0), attributes: {} }],
-          }
-        }).then(function () { App.toast(t('operation_success'), 'success'); loadProducts(); loadDashboard(); })
-          .catch(function (e) { App.toast(e.message, 'error'); });
+        location.href = '/admin-product-edit.html?new=1';
       };
       document.getElementById('add-admin-btn').onclick = addAdmin;
       document.getElementById('send-newsletter-btn').onclick = sendNewsletter;
@@ -436,12 +782,94 @@
         a.onclick = function () { switchView(a.getAttribute('data-view')); };
       });
 
+      // ---------- 商品模态框事件 ----------
+      document.getElementById('pf-save').onclick = saveProduct;
+      document.getElementById('pf-main-image-btn').onclick = function () {
+        document.getElementById('pf-main-image-file').click();
+      };
+      document.getElementById('pf-main-image-file').onchange = function () {
+        if (!this.files || !this.files[0]) return;
+        uploadImageFile(this.files[0]).then(function (url) {
+          productForm.mainImage = url;
+          renderMainImage();
+          App.toast('主图已上传', 'success');
+        }).catch(function (e) { App.toast(e.message, 'error'); });
+        this.value = '';
+      };
+      document.getElementById('pf-main-image-remove').onclick = function () {
+        productForm.mainImage = '';
+        renderMainImage();
+      };
+      document.getElementById('pf-gallery-add').onclick = function () {
+        document.getElementById('pf-gallery-file').click();
+      };
+      document.getElementById('pf-gallery-file').onchange = function () {
+        var files = this.files || [];
+        var pending = Array.prototype.slice.call(files);
+        (function next() {
+          if (!pending.length) { renderGallery(); App.toast('图片已添加', 'success'); return; }
+          uploadImageFile(pending.shift()).then(function (url) {
+            productForm.gallery.push(url);
+            next();
+          }).catch(function (e) { App.toast(e.message, 'error'); next(); });
+        })();
+        this.value = '';
+      };
+
+      // ---------- 内容管理事件 ----------
+      var cmsStoryImage = '';
+      document.getElementById('cms-story-image-btn').onclick = function () {
+        document.getElementById('cms-story-image-file').click();
+      };
+      document.getElementById('cms-story-image-file').onchange = function () {
+        if (!this.files || !this.files[0]) return;
+        uploadImageFile(this.files[0]).then(function (url) {
+          cmsStoryImage = url;
+          renderCmsStoryImage(url);
+          App.toast('图片已上传', 'success');
+        }).catch(function (e) { App.toast(e.message, 'error'); });
+        this.value = '';
+      };
+      document.getElementById('cms-story-image-remove').onclick = function () {
+        cmsStoryImage = '';
+        renderCmsStoryImage('');
+      };
+      document.getElementById('cms-story-save').onclick = function () {
+        var titleZh = document.getElementById('cms-story-title-zh').value.trim();
+        var titleEn = document.getElementById('cms-story-title-en').value.trim();
+        var contentZh = document.getElementById('cms-story-content-zh').value.trim();
+        var contentEn = document.getElementById('cms-story-content-en').value.trim();
+        api('/api/admin/cms-content', {
+          method: 'PUT',
+          body: {
+            page: 'about',
+            content: {
+              story_title: { zh: titleZh, en: titleEn },
+              story_content: { zh: contentZh, en: contentEn },
+              story: { image: cmsStoryImage },
+            },
+          },
+        }).then(function () {
+          document.getElementById('cms-story-status').textContent = '已保存 ✓（前台 about 页实时生效）';
+          setTimeout(function () { document.getElementById('cms-story-status').textContent = ''; }, 3000);
+          App.toast('品牌故事已保存', 'success');
+        }).catch(function (e) { App.toast(e.message, 'error'); });
+      };
+
+      // 分类缓存（登录后加载）
+      function loadCategoryOptions() {
+        api('/api/admin/categories')
+          .then(function (list) { categoriesCache = list || []; })
+          .catch(function () {});
+      }
+
       (function init() {
         if (App.getAdminToken()) {
           adminToken = App.getAdminToken();
           showApp();
           loadDashboard(); loadProducts(); loadOrders();
           if (adminRole === 'superadmin') loadAdmins();
+          loadCategoryOptions();
           applyRoleUI();
         } else {
           shoeLogin();

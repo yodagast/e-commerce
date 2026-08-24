@@ -125,7 +125,7 @@
       var Vue = PyMall.Vue;
       var t = PyMall.t;
 
-      var slides = [
+      var defaultSlides = [
         {
           tag: t('home_new'),
           title: t('home_title'),
@@ -148,8 +148,9 @@
 
       window.mountPyMall({
         setup() {
+          var lang = PyMall.getLang();
           var state = Vue.reactive({
-            slides: slides,
+            slides: defaultSlides.slice(),
             currentSlide: 0,
             categories: [],
             products: [],
@@ -157,6 +158,24 @@
             loadingProducts: true,
             wishIds: [],
           });
+
+          // 首页轮播：后台 ERP「内容管理」维护，返回启用轮播则优先展示
+          PyMall.api('/api/banners?placement=home_hero', { noLang: true })
+            .then(function (banners) {
+              if (banners && banners.length) {
+                state.slides = banners.map(function (b) {
+                  return {
+                    tag: (b.title_i18n && (b.title_i18n.en || b.title_i18n.zh)) || b.title || '',
+                    title: (b.title_i18n && (b.title_i18n[lang] || b.title_i18n.zh)) || b.title || '',
+                    sub: (b.subtitle_i18n && (b.subtitle_i18n[lang] || b.subtitle_i18n.zh)) || b.subtitle || '',
+                    img: b.image_url || 'https://picsum.photos/seed/hero1/800/500',
+                    link: b.link_url || '',
+                  };
+                });
+                state.currentSlide = 0;
+              }
+            })
+            .catch(function () { /* 保留默认轮播 */ });
 
           // ---------- 收藏 ----------
           function loadWishlist() {
@@ -202,7 +221,8 @@
           }
 
           var timer = setInterval(function () {
-            state.currentSlide = (state.currentSlide + 1) % slides.length;
+            if (!state.slides.length) return;
+            state.currentSlide = (state.currentSlide + 1) % state.slides.length;
           }, 5000);
           Vue.onUnmounted(function () { clearInterval(timer); });
 

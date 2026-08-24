@@ -695,6 +695,43 @@ class TestOrders:
         assert r2.status_code == 200
         assert r2.json()["order_no"] == order_no
 
+    def test_checkout_reduces_available_stock_and_cancel_restores(self, buyer_token):
+        """下单预占可售库存，取消订单后释放预占库存。"""
+        requests.delete(f"{BASE}/api/cart", headers=buyer_token)
+        products = requests.get(f"{BASE}/api/products", headers=H).json()
+        detail = requests.get(f"{BASE}/api/products/{products[0]['id']}", headers=H).json()
+        sku_id = detail["skus"][0]["id"]
+        before = detail["skus"][0]["available_stock"]
+        assert before >= 1
+
+        add = requests.post(
+            f"{BASE}/api/cart/items",
+            json={"sku_id": sku_id, "quantity": 1},
+            headers=buyer_token,
+        )
+        assert add.status_code == 201, add.text
+        checkout = requests.post(
+            f"{BASE}/api/orders/checkout",
+            json={
+                "receiver_name": "库存测试",
+                "receiver_phone": "13800000000",
+                "receiver_address": "测试地址",
+                "payment_method": "mock",
+            },
+            headers=buyer_token,
+        )
+        assert checkout.status_code == 201, checkout.text
+
+        after_checkout = requests.get(f"{BASE}/api/products/{products[0]['id']}", headers=H).json()
+        assert after_checkout["skus"][0]["available_stock"] == before - 1
+
+        order_no = checkout.json()["order_no"]
+        cancel = requests.post(f"{BASE}/api/orders/{order_no}/cancel", headers=buyer_token)
+        assert cancel.status_code == 200, cancel.text
+
+        after_cancel = requests.get(f"{BASE}/api/products/{products[0]['id']}", headers=H).json()
+        assert after_cancel["skus"][0]["available_stock"] == before
+
     def test_order_flow_pay_confirm(self, order_no, buyer_token, admin_token):
         # 支付
         r = requests.post(f"{BASE}/api/orders/{order_no}/pay", headers=buyer_token)
