@@ -230,15 +230,13 @@
         request.then(function (saved) {
           document.getElementById('action-status').textContent = '保存成功';
           App.toast(isCreate ? '商品已创建' : '商品信息已保存', 'success');
-          if (isCreate && saved && saved.id) {
-            location.replace('/admin-product-edit.html?id=' + saved.id);
-          }
+          location.replace('/admin.html?view=products');
         }).catch(function (error) { App.toast(error.message, 'error'); })
           .finally(function () { button.disabled = false; });
       }
 
-      document.getElementById('back-btn').onclick = function () { location.href = '/admin.html'; };
-      document.getElementById('cancel-btn').onclick = function () { history.back(); };
+      document.getElementById('back-btn').onclick = function () { location.href = '/admin.html?view=products'; };
+      document.getElementById('cancel-btn').onclick = function () { location.href = '/admin.html?view=products'; };
       document.getElementById('save-btn').onclick = saveProduct;
       document.getElementById('main-upload').onclick = function () { document.getElementById('main-file').click(); };
       document.getElementById('main-file').onchange = function () {

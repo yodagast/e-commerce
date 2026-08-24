@@ -208,6 +208,7 @@
       var App = window.App;
       var t = App.t;
       var adminToken = null;
+      var initialView = new URLSearchParams(location.search).get('view') || 'dashboard';
 
       function api(path, opts) {
         opts = opts || {};
@@ -871,6 +872,7 @@
           if (adminRole === 'superadmin') loadAdmins();
           loadCategoryOptions();
           applyRoleUI();
+          switchView(initialView);
         } else {
           shoeLogin();
         }
