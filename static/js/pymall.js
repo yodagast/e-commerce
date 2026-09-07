@@ -40,13 +40,13 @@
       easy_return_desc: '无理由退换货', support_desc: '专业客服团队',
       subscribe_title: '订阅优惠信息', subscribe_desc: '第一时间获取新品与折扣',
       subscribe_btn: '订阅', subscribe_ph: '输入您的邮箱', subscribe_ok: '订阅成功！',
-      about_us: '关于我们', about_desc: 'PyMall 面向全球的时尚电商平台，提供高品质商品与优质服务。',
+      about_us: '关于 YOYOLE', about_desc: 'YOYOLE 专注瑜伽与户外生活，陪你在每一次呼吸和出发中找到力量。',
       cust_service: '客户服务', ship_info: '配送说明', return_policy: '退换政策',
       privacy: '隐私条款', contact_us: '联系我们', payment_icons: '支付宝 · 微信 · Stripe',
       need_login: '请先登录后再操作', cart_updated: '购物车已更新',
       added_to_cart: '已加入购物车', brand: '品牌', sku: '规格',
-      home_new: 'NEW ARRIVALS', home_title: '时尚焕新 点亮每一天',
-      home_sub: '精选全球好物，潮流设计，品质之选',
+      home_new: 'MOVE WITH PURPOSE', home_title: '瑜伽与户外，向自然出发',
+      home_sub: '为练习、远行与日常生活准备舒适耐用的装备',
       shop_now: '立即选购', all_categories: '全部',
       order_detail: '订单详情', receiver: '收货人', order_items: '订单商品',
       order_time: '下单时间', pay_time: '支付时间', ship_time: '发货时间',
@@ -60,36 +60,41 @@
       my_addresses_title: '我的地址', my_reviews_title: '我的评价',
       my_wishlist_title: '我的收藏', my_after_sales: '我的售后',
       edit: '编辑', save: '保存', phone: '手机号', view_all: '查看全部',
+      profile_intro: '管理您的联系方式与账户偏好', account_active: '账户正常',
+      email_secure_hint: '邮箱用于登录和接收订单通知，暂不支持直接修改。',
+      phone_placeholder: '请输入手机号（可选）', change_password: '修改密码',
+      manage_addresses: '管理收货地址', view_order_history: '查看订单记录',
+      profile_load_failed: '资料加载失败，请检查网络后刷新页面。',
       confirm_delete: '确认删除该条记录？',
       approved_review: '已通过', review_pending: '审核中',
       after_sales_empty: '暂无售后记录', after_sales_tip: '如有退换货需求，请联系在线客服',
       // ---- 登录引导 ----
       orders_login_tip: '登录后查看您的订单', cart_login_tip: '登录后查看和管理您的购物车',
       // ---- About Us ----
-      about: '关于我们', brand_story: '品牌故事', about_hero_tag: 'ABOUT PyMall',
-      about_hero_title: 'PyMall 是全球设计师潮玩电商平台',
-      about_hero_sub: '连接艺术家与粉丝，通过角色化潮流玩具与沉浸式体验，传递创意与快乐。',
+      about: '关于我们', brand_story: 'YOYOLE 故事', about_hero_tag: 'ABOUT YOYOLE',
+      about_hero_title: 'YOYOLE，让身体回到自然',
+      about_hero_sub: '从瑜伽练习到山野远行，用认真设计的装备支持每一次自在出发。',
       our_story: '我们的故事', our_story_kicker: 'OUR STORY',
-      our_story_p1: 'PyMall 创立于 2020 年，从一个热爱潮流文化的小团队起步，',
-      our_story_p2: '我们相信每个人都有属于自己的潮流表达。',
+      our_story_p1: 'YOYOLE 创立于 2020 年，从一群热爱瑜伽与户外生活的人开始，',
+      our_story_p2: '我们相信好的装备不应限制身体，而应让人与自然连接得更深。',
       mission_title: '我们的使命', mission_kicker: 'MISSION',
-      mission_desc: '让每一位用户都能发现独特、有趣的潮流商品，支持艺术家与设计师的创作。',
-      mission_p1: '让好设计被看见', mission_p2: '让好作品触达全球',
-      discover_title: '探索 PyMall', discover_kicker: 'DISCOVER',
-      discover_desc: '从线上商城到社区互动，我们打造完整的潮流体验生态。',
-      discover_1_title: 'PyMall 商城', discover_1_desc: '精选全球设计师潮玩，正品保障，全球直邮',
-      discover_2_title: '创作者计划', discover_2_desc: '支持独立艺术家与设计师，让灵感成真',
-      discover_3_title: '潮流社区', discover_3_desc: '分享收藏心得，结识同好，玩出态度',
+      mission_desc: '让每个人都能用舒适、耐用的装备亲近身体，亲近自然。',
+      mission_p1: '为身体留出空间', mission_p2: '为每次出发做好准备',
+      discover_title: '用户故事', discover_kicker: 'USER STORIES',
+      discover_desc: '分享你的练习、远行与和自然相处的时刻。',
+      discover_1_title: '瑜伽练习', discover_1_desc: '从晨间呼吸到稳定体式，找到自己的节奏',
+      discover_2_title: '户外出发', discover_2_desc: '轻装走进山野，把风景带回生活',
+      discover_3_title: '用户故事', discover_3_desc: '分享真实体验，与同样热爱生活的人相遇',
       milestones_title: '成长历程', milestones_kicker: 'MILESTONES',
-      m1_time: '2020', m1_title: '创立', m1_desc: 'PyMall 正式上线，首批 50 位设计师入驻',
-      m2_time: '2022', m2_title: '全球扩展', m2_desc: '服务覆盖 30 个国家与地区',
-      m3_time: '2024', m3_title: '百万会员', m3_desc: '会员突破 100 万，社区活跃度领先行业',
-      m4_time: '2026', m4_title: '持续创新', m4_desc: '布局 AI 潮流推荐与沉浸式购物体验',
+      m1_time: '2020', m1_title: '品牌创立', m1_desc: 'YOYOLE 从瑜伽与户外爱好者的真实需求出发',
+      m2_time: '2022', m2_title: '走进山野', m2_desc: '推出轻量、耐用的户外出行系列',
+      m3_time: '2024', m3_title: '练习相遇', m3_desc: '与更多瑜伽社群分享身体与呼吸的练习',
+      m4_time: '2026', m4_title: '继续出发', m4_desc: '让自然友好的设计陪伴更多日常旅程',
       values_title: '我们的价值观', values_kicker: 'VALUES',
-      v1_title: '创意至上', v1_desc: '尊重每一种创意的表达',
-      v2_title: '真诚服务', v2_desc: '以用户为中心，真诚而负责',
-      v3_title: '全球视野', v3_desc: '连接全球艺术家与潮流爱好者',
-      about_footer_desc: 'PyMall 是全球设计师潮流电商平台，连接艺术家与粉丝，传递创意与快乐。',
+      v1_title: '自然真实', v1_desc: '尊重身体感受，也尊重自然节律',
+      v2_title: '简洁耐用', v2_desc: '减少多余设计，让装备经得起时间',
+      v3_title: '一起成长', v3_desc: '与练习者和户外伙伴共同探索',
+      about_footer_desc: 'YOYOLE 专注瑜伽与户外生活，让每一次呼吸和出发都更自在。',
       // ---- 收藏 ----
       wishlist: '收藏', my_wishlist: '我的收藏', added_to_wishlist: '已加入收藏',
       removed_from_wishlist: '已取消收藏', wishlist_empty: '收藏夹是空的',
@@ -153,13 +158,13 @@
       easy_return_desc: 'Hassle-free returns', support_desc: 'Professional support team',
       subscribe_title: 'Subscribe & Save', subscribe_desc: 'Get new arrivals and exclusive offers',
       subscribe_btn: 'Subscribe', subscribe_ph: 'Enter your email', subscribe_ok: 'Subscribed!',
-      about_us: 'About Us', about_desc: 'PyMall is a global fashion e-commerce platform offering quality products and services.',
+      about_us: 'About YOYOLE', about_desc: 'YOYOLE creates thoughtful gear for yoga, outdoor living, and everyday movement.',
       cust_service: 'Customer Service', ship_info: 'Shipping Info', return_policy: 'Return Policy',
       privacy: 'Privacy Policy', contact_us: 'Contact Us', payment_icons: 'Alipay · WeChat · Stripe',
       need_login: 'Please login first', cart_updated: 'Cart updated',
       added_to_cart: 'Added to cart', brand: 'Brand', sku: 'SKU',
-      home_new: 'NEW ARRIVALS', home_title: 'Fresh Looks for Every Day',
-      home_sub: 'Curated global picks, trendy designs, quality choices',
+      home_new: 'MOVE WITH PURPOSE', home_title: 'Yoga and outdoor, closer to nature',
+      home_sub: 'Comfortable, durable gear for practice, travel, and everyday movement',
       shop_now: 'Shop Now', all_categories: 'All',
       order_detail: 'Order Detail', receiver: 'Receiver', order_items: 'Items',
       order_time: 'Order Time', pay_time: 'Paid At', ship_time: 'Shipped At',
@@ -173,18 +178,23 @@
       my_addresses_title: 'My Addresses', my_reviews_title: 'My Reviews',
       my_wishlist_title: 'My Wishlist', my_after_sales: 'After-sales',
       edit: 'Edit', save: 'Save', phone: 'Phone', view_all: 'View All',
+      profile_intro: 'Manage your contact details and account preferences', account_active: 'Active account',
+      email_secure_hint: 'Your email is used for sign-in and order updates and cannot be changed here.',
+      phone_placeholder: 'Enter phone number (optional)', change_password: 'Change password',
+      manage_addresses: 'Manage addresses', view_order_history: 'View order history',
+      profile_load_failed: 'Unable to load your profile. Check your connection and refresh.',
       confirm_delete: 'Confirm delete this record?',
       approved_review: 'Approved', review_pending: 'Pending',
       after_sales_empty: 'No after-sales records', after_sales_tip: 'For returns or exchanges, please contact support',
       // ---- 登录引导 ----
       orders_login_tip: 'Log in to view your orders', cart_login_tip: 'Log in to view and manage your cart',
       // ---- About Us ----
-      about: 'About Us', brand_story: 'Brand Story', about_hero_tag: 'ABOUT PyMall',
-      about_hero_title: 'PyMall is a global designer toy e-commerce platform',
-      about_hero_sub: 'Connecting artists and fans through character-based collectible toys and immersive experiences.',
+      about: 'About Us', brand_story: 'Our YOYOLE Story', about_hero_tag: 'ABOUT YOYOLE',
+      about_hero_title: 'YOYOLE brings the body back to nature',
+      about_hero_sub: 'Thoughtful gear for yoga practice, outdoor adventures, and a life in motion.',
       our_story: 'Our Story', our_story_kicker: 'OUR STORY',
-      our_story_p1: 'Founded in 2020, PyMall started as a small team passionate about street culture.',
-      our_story_p2: 'We believe everyone has their own expression of fashion.',
+      our_story_p1: 'Founded in 2020, YOYOLE began with people who love yoga and the outdoors.',
+      our_story_p2: 'We believe good gear should free the body and deepen our connection with nature.',
       mission_title: 'Our Mission', mission_kicker: 'MISSION',
       mission_desc: 'Help every user discover unique and fun products, and support artists and designers.',
       mission_p1: 'Make great design visible', mission_p2: 'Bring great works to the world',
@@ -295,6 +305,11 @@
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (res.ok) return data;
+        // 401 且携带 token：说明凭证已失效/过期，立即清除，避免"假登录"死循环
+        if (res.status === 401 && options.token) {
+          clearToken();
+          store.token = null;
+        }
         var err = new Error(data.detail || data.message || ('HTTP ' + res.status));
         err.status = res.status;
         throw err;
@@ -348,6 +363,19 @@
   }
 
   // ---------- 认证 ----------
+  // 登录/登出/注册 的事件回调（页面可注册以刷新登录态的个性化数据，如「我的投稿」）
+  var _authListeners = [];
+  function onAuthChange(fn) {
+    if (typeof fn === 'function') _authListeners.push(fn);
+    return function () {
+      var i = _authListeners.indexOf(fn);
+      if (i > -1) _authListeners.splice(i, 1);
+    };
+  }
+  function _notifyAuthChange() {
+    _authListeners.forEach(function (fn) { try { fn(); } catch (e) {} });
+  }
+
   function login(email, password) {
     return api('/api/auth/login', {
       method: 'POST', noLang: true,
@@ -358,6 +386,7 @@
       store.authModal = false;
       refreshCart();
       refreshWishlist();
+      _notifyAuthChange();
       return data;
     });
   }
@@ -372,6 +401,7 @@
       store.authModal = false;
       refreshCart();
       refreshWishlist();
+      _notifyAuthChange();
       return data;
     });
   }
@@ -381,6 +411,7 @@
     store.token = null;
     store.cartCount = 0;
     store.wishlistCount = 0;
+    _notifyAuthChange();
     location.href = '/';
   }
 
@@ -510,8 +541,7 @@
       <nav class="main-nav">
         <div class="nav-inner">
           <div class="brand" @click="goHome">
-            <span class="brand-name">PyMall</span>
-            <span class="brand-tag">FASHION</span>
+            <img class="brand-logo" src="/static/img/yoyole-logo.svg" alt="YOYOLE">
           </div>
           <div class="nav-search">
             <input :placeholder="t('search_placeholder')" v-model="kw"
@@ -867,6 +897,7 @@
     getLang: getLang,
     setLang: setLang,
     switchLang: switchLang,
+    onAuthChange: onAuthChange,
     t: t,
     tt: tt,
     localName: localName,

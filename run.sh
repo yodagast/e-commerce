@@ -23,23 +23,27 @@ cd "$(dirname "$0")"
 PID_FILE="${PID_FILE:-./run.pid}"
 LOG_FILE="${LOG_FILE:-./run.log}"
 
+log() {
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S%z')" "$*"
+}
+
 start() {
     if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-        echo "服务已在运行 (PID: $(cat "$PID_FILE"))，无需重复启动"
+        log "服务已在运行 (PID: $(cat "$PID_FILE"))，无需重复启动"
         return 0
     fi
     [ -f "$PID_FILE" ] && rm -f "$PID_FILE"   # 清理失效的 PID 文件
-    echo "启动电商独立站: http://${HOST}:${PORT}  (外网用服务器 IP 访问)"
-    nohup .venv/bin/uvicorn main:app --host "$HOST" --port "$PORT" >>"$LOG_FILE" 2>&1 &
+    log "启动电商独立站: http://${HOST}:${PORT}  (外网用服务器 IP 访问)"
+    nohup .venv/bin/uvicorn main:app --host "$HOST" --port "$PORT" --log-config logging.json >>"$LOG_FILE" 2>&1 &
     echo "$!" > "$PID_FILE"
-    echo "服务已启动 (PID: $(cat "$PID_FILE"))，日志见 $LOG_FILE"
+    log "服务已启动 (PID: $(cat "$PID_FILE"))，日志见 $LOG_FILE"
 }
 
 stop() {
     if [ -f "$PID_FILE" ]; then
         PID="$(cat "$PID_FILE")"
         if kill -0 "$PID" 2>/dev/null; then
-            echo "正在关闭服务 (PID: $PID)"
+            log "正在关闭服务 (PID: $PID)"
             # 先发 SIGTERM 优雅退出，等最多 5 秒
             kill "$PID" 2>/dev/null || true
             for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -49,16 +53,16 @@ stop() {
                 sleep 0.5
             done
             if kill -0 "$PID" 2>/dev/null; then
-                echo "优雅退出超时，强制终止 (PID: $PID)"
+                log "优雅退出超时，强制终止 (PID: $PID)"
                 kill -9 "$PID" 2>/dev/null || true
             fi
         else
-            echo "进程 (PID: $PID) 已不存在，清理 PID 文件"
+                log "进程 (PID: $PID) 已不存在，清理 PID 文件"
         fi
         rm -f "$PID_FILE"
-        echo "服务已停止"
+            log "服务已停止"
     else
-        echo "未找到 PID 文件，服务当前未在运行"
+            log "未找到 PID 文件，服务当前未在运行"
     fi
 }
 
@@ -69,9 +73,9 @@ restart() {
 
 status() {
     if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-        echo "服务运行中 (PID: $(cat "$PID_FILE"))，地址 http://${HOST}:${PORT}"
+        log "服务运行中 (PID: $(cat "$PID_FILE"))，地址 http://${HOST}:${PORT}"
     else
-        echo "服务未运行"
+        log "服务未运行"
         [ -f "$PID_FILE" ] && rm -f "$PID_FILE"
     fi
 }

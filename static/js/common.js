@@ -159,6 +159,10 @@
     }).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         if (res.ok) return data;
+        if (res.status === 401 && options.token) {
+          if (options.token === getAdminToken()) clearAdminToken();
+          if (options.token === getToken()) clearToken();
+        }
         var err = new Error(data.detail || data.message || ('HTTP ' + res.status));
         err.status = res.status;
         throw err;

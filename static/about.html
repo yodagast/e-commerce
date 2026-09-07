@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>关于我们 - PyMall</title>
+  <title>关于 YOYOLE - 瑜伽与户外生活</title>
   <link rel="stylesheet" href="/static/css/jjshouse.css">
   <style>
     /* ---------- About Us 品牌故事页样式 ---------- */
@@ -180,10 +180,42 @@
       font-size: 14px;
       margin-top: 10px;
     }
+    /* 标签墙 Tab（按用户标签聚合筛选） */
+    .discover-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .discover-tabs button {
+      border: 1px solid var(--jjs-border);
+      background: #fff;
+      color: var(--jjs-gray);
+      border-radius: 999px;
+      padding: 8px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .discover-tabs button:hover { border-color: var(--jjs-primary); color: var(--jjs-primary); }
+    .discover-tabs button.active {
+      background: var(--jjs-primary);
+      border-color: var(--jjs-primary);
+      color: #fff;
+    }
+    /* 标签筛选提示行 */
+    .discover-tab-hint {
+      text-align: center;
+      color: var(--jjs-gray);
+      font-size: 12.5px;
+      margin-bottom: 26px;
+    }
+    /* 瀑布流图墙（masonry） */
     .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      columns: 3;
+      column-gap: 24px;
     }
     .discover-card {
       border: 1px solid var(--jjs-border);
@@ -191,23 +223,40 @@
       overflow: hidden;
       background: #fff;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      break-inside: avoid;
+      margin-bottom: 24px;
+      display: inline-block;
+      width: 100%;
+      text-decoration: none;
+      color: inherit;
     }
     .discover-card:hover {
       transform: translateY(-6px);
       box-shadow: var(--shadow-lg);
+      text-decoration: none;
     }
     .discover-card .dc-img {
-      height: 210px;
+      width: 100%;
       overflow: hidden;
+      max-height: 320px;
     }
     .discover-card .dc-img img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      display: block;
       object-fit: cover;
       transition: transform 0.5s ease;
     }
     .discover-card:hover .dc-img img {
       transform: scale(1.06);
+    }
+    .discover-card .dc-img-placeholder {
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--jjs-bg-light, #f7f7f7);
+      color: #cbd5e1;
     }
     .discover-card .dc-body {
       padding: 22px 22px 26px;
@@ -220,22 +269,215 @@
       align-items: center;
       gap: 8px;
     }
+    .discover-card .dc-time {
+      color: #a0aec0;
+      font-size: 12px;
+      margin: -2px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
     .discover-card .dc-desc {
       color: var(--jjs-gray);
       font-size: 13.5px;
       line-height: 1.8;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
-    .discover-card .dc-link {
-      display: inline-block;
-      margin-top: 14px;
+    .discover-card .dc-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--jjs-border);
+    }
+    .discover-card .dc-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 60%;
+    }
+    .discover-card .dc-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--jjs-primary);
+      background: rgba(216, 30, 83, 0.08);
+      border-radius: 999px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+    .discover-card .dc-author {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--jjs-gray);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .discover-card .dc-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f06b8a, var(--jjs-primary));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    /* 标签 chips（个人故事/卡片标签） */
+    .story-card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .story-tag-chip {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--jjs-primary);
+      background: rgba(216, 30, 83, 0.08);
+      border-radius: 999px;
+      padding: 2px 10px;
+    }
+    .discover-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--jjs-gray);
+      padding: 40px 0;
+      background: #fafafa;
+      border-radius: var(--radius-lg);
+      border: 1px dashed var(--jjs-border);
+    }
+    .story-share {
+      max-width: 760px;
+      margin: 0 auto 34px;
+      padding: 20px;
+      border: 1px solid var(--jjs-border);
+      border-radius: var(--radius-md);
+      background: var(--jjs-bg-light);
+    }
+    .story-share input, .story-share textarea {
+      width: 100%;
+      border: 1px solid var(--jjs-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      font: inherit;
+    }
+    .story-share .story-file {
+      margin: 2px 0 12px;
+      font-size: 13px;
+    }
+    /* 分享标签选择（用户自定义标签 + 已有标签快捷选择） */
+    .share-cats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 10px;
+    }
+    .share-cats label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--jjs-border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--jjs-gray);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .share-cats label.active {
+      border-color: var(--jjs-primary);
+      background: rgba(216, 30, 83, 0.06);
       color: var(--jjs-primary);
       font-weight: 600;
-      font-size: 13px;
-      border-bottom: 1px solid transparent;
     }
-    .discover-card .dc-link:hover {
-      border-bottom-color: var(--jjs-primary);
+    .share-cats input { display: none; }
+    .share-cats label .cnt { font-size: 11px; color: #a0aec0; }
+    /* 自定义标签输入 */
+    .share-tag-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 10px;
     }
+    .share-tag-input-row input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .share-tag-input-row button { flex-shrink: 0; }
+    /* 分享图片预览 */
+    .share-img-preview {
+      position: relative;
+      display: inline-block;
+      margin: 0 0 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--jjs-border);
+    }
+    .share-img-preview img {
+      max-width: 220px;
+      max-height: 150px;
+      display: block;
+      object-fit: cover;
+    }
+    .share-img-preview .share-img-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      font-size: 14px;
+      line-height: 22px;
+      cursor: pointer;
+    }
+    .share-img-preview .share-img-remove:hover { background: var(--jjs-primary); }
+    .my-stories {
+      max-width: 760px;
+      margin: 28px auto 0;
+    }
+    .my-story-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--jjs-border);
+    }
+    .my-story-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+    .my-story-info .my-story-title { font-weight: 600; font-size: 14px; }
+    .my-story-status {
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 3px 10px;
+      flex-shrink: 0;
+    }
+    .my-story-status.approved { background: #dcfce7; color: #166534; }
+    .my-story-status.pending { background: #fef3c7; color: #92400e; }
+    .my-story-status.rejected { background: #fee2e2; color: #b91c1c; }
+    .my-story-reason {
+      font-size: 12px;
+      color: #b91c1c;
+      background: #fef2f2;
+      border-radius: 6px;
+      padding: 3px 10px;
+    }
+    .my-story-edit { flex-shrink: 0; }
 
     /* 成长历程时间线 */
     .milestones {
@@ -338,9 +580,12 @@
       line-height: 1.8;
     }
 
+    @media (max-width: 1200px) and (min-width: 901px) {
+      .discover-grid { columns: 2; }
+    }
     @media (max-width: 900px) {
       .story-grid { grid-template-columns: 1fr; gap: 28px; }
-      .discover-grid { grid-template-columns: 1fr; }
+      .discover-grid { columns: 1; gap: 20px; }
       .milestones-grid { grid-template-columns: repeat(2, 1fr); }
       .values-grid { grid-template-columns: 1fr; }
     }
@@ -372,8 +617,8 @@
           </div>
           <div class="story-visual">
             <img v-if="storyImage" :src="storyImage" alt="Story">
-            <img v-else src="https://picsum.photos/seed/pymall-story/760/500" alt="Story">
-            <span class="sv-tag">PyMall</span>
+            <img v-else src="https://picsum.photos/seed/yoyole-nature/760/500" alt="YOYOLE yoga and outdoor life">
+            <span class="sv-tag">YOYOLE</span>
           </div>
         </div>
       </div>
@@ -392,37 +637,41 @@
       </div>
     </section>
 
-    <!-- 探索 Discover（仿 POP LAND / INNER FLOW / POP TOY SHOW） -->
-    <section class="discover-section">
+    <!-- 用户故事社区 -->
+    <section class="discover-section" id="user-stories">
       <div class="container">
         <div class="discover-header">
-          <div class="kicker">{{ t('discover_kicker') }}</div>
-          <h2>{{ t('discover_title') }}</h2>
-          <p class="discover-desc">{{ t('discover_desc') }}</p>
+          <div class="kicker">USER STORIES</div>
+          <h2>用户故事</h2>
+          <p class="discover-desc">听见真实分享，让每一种热爱被看见。</p>
         </div>
+        <!-- 标签墙筛选 -->
+        <div class="discover-tabs">
+          <button :class="{active: activeTag==='all'}" @click="activeTag='all'">全部</button>
+          <button v-for="t in allTags" :key="t.name" :class="{active: activeTag===t.name}" @click="activeTag=t.name">
+            {{ t.name }}<span v-if="t.count" style="font-size:10px;opacity:.7"> ({{ t.count }})</span>
+          </button>
+        </div>
+        <div class="discover-tab-hint" v-if="allTags.length">按标签筛选故事</div>
         <div class="discover-grid">
-          <div class="discover-card">
-            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-store/600/400" alt="Store"></div>
-            <div class="dc-body">
-              <div class="dc-title"><base-icon name="bag" :size="18"></base-icon> {{ t('discover_1_title') }}</div>
-              <div class="dc-desc">{{ t('discover_1_desc') }}</div>
-              <a class="dc-link" href="/products.html">{{ t('shop_now') }} <base-icon name="chevronRight" :size="14"></base-icon></a>
+          <a class="discover-card" v-for="story in filteredStories" :key="story.id" :href="'/story-detail.html?id=' + story.id">
+            <div class="dc-img" v-if="story.image_url && !story.imgError"><img :src="story.image_url" alt="User story" loading="lazy" @error="story.imgError = true"></div>
+            <div class="dc-img dc-img-placeholder" v-else>
+              <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
             </div>
-          </div>
-          <div class="discover-card">
-            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-creator/600/400" alt="Creator"></div>
             <div class="dc-body">
-              <div class="dc-title"><base-icon name="palette" :size="18"></base-icon> {{ t('discover_2_title') }}</div>
-              <div class="dc-desc">{{ t('discover_2_desc') }}</div>
+              <div class="dc-title"><base-icon name="review" :size="18"></base-icon> {{ story.title }}</div>
+              <div class="dc-time" v-if="story.created_at">{{ formatTime(story.created_at) }}</div>
+              <div class="dc-desc">{{ story.content }}</div>
+              <div class="dc-meta">
+                <span class="dc-author"><span class="dc-avatar">{{ (story.author || 'U').charAt(0).toUpperCase() }}</span> {{ story.author }}</span>
+                <span class="dc-tags">
+                  <span v-for="tg in (story.tags || []).slice(0, 3)" :key="tg" class="dc-tag">{{ tg }}</span>
+                </span>
+              </div>
             </div>
-          </div>
-          <div class="discover-card">
-            <div class="dc-img"><img src="https://picsum.photos/seed/pymall-community/600/400" alt="Community"></div>
-            <div class="dc-body">
-              <div class="dc-title"><base-icon name="review" :size="18"></base-icon> {{ t('discover_3_title') }}</div>
-              <div class="dc-desc">{{ t('discover_3_desc') }}</div>
-            </div>
-          </div>
+          </a>
+          <div class="discover-empty" v-if="!filteredStories.length">还没有该标签的用户故事，成为第一个分享的人吧。</div>
         </div>
       </div>
     </section>
@@ -435,25 +684,10 @@
           <h2>{{ t('milestones_title') }}</h2>
         </div>
         <div class="milestones-grid">
-          <div class="milestone-card">
-            <div class="ml-time">{{ t('m1_time') }}</div>
-            <div class="ml-title">{{ t('m1_title') }}</div>
-            <div class="ml-desc">{{ t('m1_desc') }}</div>
-          </div>
-          <div class="milestone-card">
-            <div class="ml-time">{{ t('m2_time') }}</div>
-            <div class="ml-title">{{ t('m2_title') }}</div>
-            <div class="ml-desc">{{ t('m2_desc') }}</div>
-          </div>
-          <div class="milestone-card">
-            <div class="ml-time">{{ t('m3_time') }}</div>
-            <div class="ml-title">{{ t('m3_title') }}</div>
-            <div class="ml-desc">{{ t('m3_desc') }}</div>
-          </div>
-          <div class="milestone-card">
-            <div class="ml-time">{{ t('m4_time') }}</div>
-            <div class="ml-title">{{ t('m4_title') }}</div>
-            <div class="ml-desc">{{ t('m4_desc') }}</div>
+          <div class="milestone-card" v-for="item in milestones" :key="item.time">
+            <div class="ml-time">{{ item.time }}</div>
+            <div class="ml-title">{{ item.title }}</div>
+            <div class="ml-desc">{{ item.desc }}</div>
           </div>
         </div>
       </div>
@@ -467,20 +701,10 @@
           <h2>{{ t('values_title') }}</h2>
         </div>
         <div class="values-grid">
-          <div class="value-card">
-            <div class="v-ic"><base-icon name="bulb" :size="24"></base-icon></div>
-            <div class="v-title">{{ t('v1_title') }}</div>
-            <div class="v-desc">{{ t('v1_desc') }}</div>
-          </div>
-          <div class="value-card">
-            <div class="v-ic"><base-icon name="handshake" :size="24"></base-icon></div>
-            <div class="v-title">{{ t('v2_title') }}</div>
-            <div class="v-desc">{{ t('v2_desc') }}</div>
-          </div>
-          <div class="value-card">
-            <div class="v-ic"><base-icon name="globe" :size="24"></base-icon></div>
-            <div class="v-title">{{ t('v3_title') }}</div>
-            <div class="v-desc">{{ t('v3_desc') }}</div>
+          <div class="value-card" v-for="(item, index) in values" :key="item.title">
+            <div class="v-ic"><base-icon :name="index === 1 ? 'handshake' : (index === 2 ? 'globe' : 'bulb')" :size="24"></base-icon></div>
+            <div class="v-title">{{ item.title }}</div>
+            <div class="v-desc">{{ item.desc }}</div>
           </div>
         </div>
       </div>
@@ -493,7 +717,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=17"></script>
+  <script src="/static/js/pymall.js?v=20"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -507,6 +731,21 @@
             storyTitle: t('our_story'),
             storyParagraphs: [t('our_story_p1'), t('our_story_p2')],
             storyImage: '',
+            milestones: [],
+            values: [],
+            userStories: [],
+            allTags: [],           // 从公开故事聚合的标签墙 [{name, count}]
+            activeTag: 'all',      // 标签墙当前筛选
+          });
+
+          // 按标签筛选后的公开故事
+          var filteredStories = Vue.computed(function () {
+            if (!state.userStories) return [];
+            if (state.activeTag === 'all') return state.userStories;
+            return state.userStories.filter(function (s) {
+              var tags = s.tags || [];
+              return tags.indexOf(state.activeTag) > -1;
+            });
           });
 
           PyMall.api('/api/site-content?page=about', { noLang: true })
@@ -523,14 +762,60 @@
                 if (typeof si === 'object' && si) si = si.zh || si.en || '';
                 if (si) state.storyImage = si;
               }
+              var lang = PyMall.getLang();
+              function localize(item, field) {
+                var value = item && item[field];
+                return value && typeof value === 'object' ? (value[lang] || value.zh || value.en || '') : (value || '');
+              }
+              state.milestones = (d.milestones || []).map(function (item) {
+                return { time: localize(item, 'time'), title: localize(item, 'title'), desc: localize(item, 'desc') };
+              });
+              state.values = (d.values || []).map(function (item) {
+                return { title: localize(item, 'title'), desc: localize(item, 'desc') };
+              });
             })
             .catch(function () { /* 保持默认文案 */ });
+
+          // 加载公开故事（兼容旧数组结构与新 {items, tags} 结构）
+          function loadStories() {
+            PyMall.api('/api/user-stories').then(function (data) {
+              if (Array.isArray(data)) {
+                // 旧结构（数组）：兼容处理
+                state.userStories = data;
+                var tagCount = {};
+                data.forEach(function (s) {
+                  (s.tags || []).forEach(function (tg) { tagCount[tg] = (tagCount[tg] || 0) + 1; });
+                });
+                state.allTags = Object.keys(tagCount).map(function (k) { return { name: k, count: tagCount[k] }; });
+              } else {
+                state.userStories = (data && data.items) || [];
+                state.allTags = (data && data.tags) || [];
+              }
+            }).catch(function () {});
+          }
+          loadStories();
+
+          // 用户故事发布时间格式化（ISO → “YYYY-MM-DD”）
+          function formatTime(iso) {
+            if (!iso) return '';
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return String(iso).replace('T', ' ').slice(0, 10);
+            var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+          }
 
           return {
             t: t,
             storyTitle: Vue.computed(function () { return state.storyTitle; }),
             storyParagraphs: Vue.computed(function () { return state.storyParagraphs; }),
             storyImage: Vue.computed(function () { return state.storyImage; }),
+            milestones: Vue.computed(function () { return state.milestones; }),
+            values: Vue.computed(function () { return state.values; }),
+            userStories: Vue.computed(function () { return state.userStories; }),
+            filteredStories: filteredStories,
+            allTags: Vue.computed(function () { return state.allTags; }),
+            activeTag: Vue.computed({ get: function () { return state.activeTag; }, set: function (v) { state.activeTag = v; } }),
+            formatTime: formatTime,
           };
         },
       });

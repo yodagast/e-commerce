@@ -1,4 +1,6 @@
 """异步数据库引擎与会话管理"""
+import logging
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -8,6 +10,8 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 # 异步引擎（asyncpg 驱动）
 engine = create_async_engine(
@@ -52,6 +56,9 @@ async def init_db() -> None:
 _MIGRATIONS: list[tuple[str, str, str]] = [
     # (表名, 列名, 列定义)
     ("customers", "last_login", "TIMESTAMP NULL"),
+    ("user_stories", "category", "VARCHAR(30) DEFAULT 'life'"),
+    ("user_stories", "reject_reason", "VARCHAR(500) NULL"),
+    ("user_stories", "tags", "JSON DEFAULT '[]'::json"),
 ]
 
 
@@ -72,4 +79,4 @@ async def run_light_migrations() -> None:
                 await conn.execute(
                     text(f'ALTER TABLE "{table}" ADD COLUMN IF NOT EXISTS "{column}" {column_def}')
                 )
-                print(f"[migrate] 已为 {table}.{column} 补充列 {column_def}")
+                logger.info("[migrate] 已为 %s.%s 补充列 %s", table, column, column_def)

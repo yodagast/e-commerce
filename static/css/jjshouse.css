@@ -129,6 +129,13 @@ img {
   letter-spacing: -0.5px;
 }
 
+.brand .brand-logo {
+  display: block;
+  width: 126px;
+  height: 36px;
+  object-fit: contain;
+}
+
 .brand .brand-tag {
   font-size: 11px;
   color: var(--jjs-gray-light);
@@ -2520,6 +2527,29 @@ img {
 /* 资料表单 */
 .acct2-profile-form {
   max-width: 420px;
+}
+
+.acct2-panel-subtitle { color: #888; font-size: 13px; margin: 5px 0 0; }
+.acct2-member-tag { color: #2e8b57; background: #eefaf2; border: 1px solid #ccebd6; border-radius: 14px; padding: 5px 11px; font-size: 12px; }
+.acct2-profile-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+.acct2-summary-item { display: flex; flex-direction: column; gap: 4px; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px 14px; }
+.acct2-summary-item strong { font-size: 20px; color: #e02e24; }
+.acct2-summary-item span { color: #777; font-size: 12px; }
+.acct2-summary-item.clickable { cursor: pointer; transition: box-shadow .15s, transform .15s, border-color .15s; }
+.acct2-summary-item.clickable:hover { border-color: #e02e24; box-shadow: 0 2px 8px rgba(224, 46, 36, .12); transform: translateY(-1px); }
+.acct2-summary-item.clickable:hover strong, .acct2-summary-item.clickable:hover span { color: #e02e24; }
+.acct2-readonly-input { background: #f8f8f8; color: #666; }
+.acct2-field-hint { display: block; color: #999; font-size: 12px; margin-top: 5px; }
+.acct2-profile-error { color: #b42318; background: #fff1f0; border: 1px solid #ffd2ce; border-radius: 6px; padding: 10px 12px; margin-bottom: 16px; font-size: 13px; }
+.acct2-profile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.acct2-profile-links { display: flex; gap: 10px; margin-top: 24px; border-top: 1px solid #f0f0f0; padding-top: 16px; }
+.acct2-profile-links button { display: flex; align-items: center; gap: 7px; flex: 1; border: 1px solid #eee; background: #fff; color: #555; border-radius: 7px; padding: 11px 12px; cursor: pointer; text-align: left; }
+.acct2-profile-links button span { flex: 1; }
+.acct2-profile-links button:hover { border-color: #e02e24; color: #e02e24; }
+
+@media (max-width: 600px) {
+  .acct2-profile-summary { grid-template-columns: repeat(2, 1fr); }
+  .acct2-profile-links { flex-direction: column; }
 }
 
 /* 地址 */

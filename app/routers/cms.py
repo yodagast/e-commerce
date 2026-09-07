@@ -10,14 +10,16 @@
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from sqlalchemy import delete, select
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
+from sqlalchemy import String, delete, or_, select
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.deps import require_admin
+from app.deps import get_current_customer, require_admin
 from app.i18n import get_lang
-from app.models import AdminUser, SiteBanner, SiteContent
+from app.models import AdminUser, Customer, SiteBanner, SiteContent, UserStory
+from app.routers.uploads import ALLOWED_IMAGE_EXT, _safe_ext, _save_upload
 
 router = APIRouter(prefix="/api", tags=["cms"])
 
@@ -37,22 +39,33 @@ DEFAULT_CMS_CONTENT = {
         "sections": {
             "hot_categories_title": {"zh": "热门分类", "en": "Hot Categories"},
             "featured_title": {"zh": "为你推荐", "en": "Featured"},
-            "banner_slogan": {"zh": "潮流新主张", "en": "New Trend Statement"},
+            "banner_slogan": {"zh": "瑜伽与户外新日常", "en": "A New Everyday in Yoga and Outdoors"},
         },
     },
     "about": {
-        "hero_title": {"zh": "关于我们", "en": "About Us"},
-        "hero_subtitle": {"zh": "以热爱与匠心，连接全球潮流生活", "en": "Connect global trend life with passion"},
-        "story_title": {"zh": "品牌故事", "en": "Brand Story"},
+        "hero_title": {"zh": "YOYOLE，让身体回到自然", "en": "YOYOLE brings the body back to nature"},
+        "hero_subtitle": {"zh": "从瑜伽练习到山野远行，用认真设计的装备支持每一次自在出发。", "en": "Thoughtful gear for yoga practice, outdoor adventures, and a life in motion."},
+        "story_title": {"zh": "我们的故事", "en": "Our Story"},
         "story_content": {
-            "zh": "我们创立于 2020 年，坚信好设计应被更多人拥有。从一针一线到极致细节，每一件商品都承载着对品质的执着与对潮流的理解。",
-            "en": "Founded in 2020, we believe great design should reach more people. Every product carries our dedication to quality and understanding of trends.",
+            "zh": "YOYOLE 创立于 2020 年，从一群热爱瑜伽与户外生活的人开始。我们相信好的装备不应限制身体，而应让人与自然连接得更深。",
+            "en": "Founded in 2020 by people who love yoga and the outdoors, YOYOLE believes good gear should free the body and deepen our connection with nature.",
         },
         "mission_title": {"zh": "我们的使命", "en": "Our Mission"},
         "mission_content": {
-            "zh": "让每一次购物都成为愉悦的体验，让每一件商品都物超所值。",
-            "en": "Make every purchase delightful and every product worth its value.",
+            "zh": "让每个人都能用舒适、耐用的装备亲近身体，亲近自然。",
+            "en": "Help everyone get closer to their body and nature with comfortable, durable gear.",
         },
+        "milestones": [
+            {"time": {"zh": "2020", "en": "2020"}, "title": {"zh": "品牌创立", "en": "Brand Founded"}, "desc": {"zh": "从热爱潮流文化的小团队起步。", "en": "Started with a small team passionate about trend culture."}},
+            {"time": {"zh": "2021", "en": "2021"}, "title": {"zh": "首次亮相", "en": "First Launch"}, "desc": {"zh": "用原创设计连接更多年轻用户。", "en": "Connected with more young users through original design."}},
+            {"time": {"zh": "2023", "en": "2023"}, "title": {"zh": "社区成长", "en": "Community Grows"}, "desc": {"zh": "用户故事成为品牌灵感的重要来源。", "en": "User stories became an important source of inspiration."}},
+            {"time": {"zh": "2025", "en": "2025"}, "title": {"zh": "走向全球", "en": "Going Global"}, "desc": {"zh": "把潮流生活带给更多城市。", "en": "Bringing trend life to more cities."}},
+        ],
+        "values": [
+            {"title": {"zh": "持续创造", "en": "Keep Creating"}, "desc": {"zh": "保持好奇，把灵感变成日常。", "en": "Stay curious and turn inspiration into everyday life."}},
+            {"title": {"zh": "真诚连接", "en": "Connect Truly"}, "desc": {"zh": "尊重每一种表达，认真回应每份热爱。", "en": "Respect every expression and answer every passion."}},
+            {"title": {"zh": "开放共生", "en": "Grow Together"}, "desc": {"zh": "与用户、创作者和城市共同成长。", "en": "Grow together with users, creators, and cities."}},
+        ],
     },
 }
 
@@ -100,6 +113,202 @@ async def get_site_content(
 ):
     """前台公开：读取页面文字内容（DB 持久化内容优先，未配置时回退默认值）"""
     return await _load_page_content_async(db, page)
+
+
+def _user_story_to_dict(story: UserStory, customer: Customer | None = None) -> dict:
+    """序列化用户故事：审核状态由 is_published + reject_reason 推导（approved/pending/rejected）"""
+    if story.is_published:
+        status = "approved"
+    elif story.reject_reason:
+        status = "rejected"
+    else:
+        status = "pending"
+    # 兼容旧数据：tags 为空时回退到 category 派生
+    tags = story.tags or []
+    if not tags:
+        tags = [story.category or "life"]
+    return {
+        "id": story.id,
+        "title": story.title,
+        "content": story.content,
+        "image_url": story.image_url,
+        "category": story.category or "life",
+        "tags": tags,
+        "author": (customer.full_name or customer.email.split("@")[0]) if customer else "用户",
+        "author_email": customer.email if customer else None,
+        "is_published": story.is_published,
+        "status": status,
+        "reject_reason": story.reject_reason,
+        "created_at": story.created_at.isoformat() if story.created_at else None,
+    }
+
+
+# 用户故事允许的默认标签（可自定义，前端标签筛选从公开列表聚合）
+STORY_CATEGORIES = {"yoga": "瑜伽", "outdoor": "户外", "life": "生活"}
+
+
+def _clean_tags(raw) -> list[str]:
+    """清洗标签：字符串转数组、去空、去重、截断"""
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, list):
+        return []
+    seen = set()
+    out = []
+    for t in raw:
+        t = str(t or "").strip()
+        if t and t not in seen and len(t) <= 20:
+            seen.add(t)
+            out.append(t)
+    return out[:6]
+
+
+@router.get("/user-stories")
+async def list_user_stories(
+    category: str | None = Query(None, description="按分类筛选：yoga/outdoor/life"),
+    tag: str | None = Query(None, description="按标签筛选（模糊匹配）"),
+    db: AsyncSession = Depends(get_db),
+):
+    """前台公开：只展示已审核发布的用户故事，支持按分类/标签筛选。"""
+    query = (
+        select(UserStory, Customer)
+        .join(Customer, Customer.id == UserStory.customer_id)
+        .where(UserStory.is_published.is_(True), Customer.is_active.is_(True))
+    )
+    if category and category in STORY_CATEGORIES:
+        query = query.where(UserStory.category == category)
+    if tag:
+        tag = tag.strip()
+        # tags JSON 数组包含匹配；兼容 tags 为空（旧数据）时按 category 匹配
+        query = query.where(
+            or_(
+                UserStory.tags.cast(JSONB).contains([tag]),
+                UserStory.category == tag,
+            )
+        )
+    query = query.order_by(UserStory.created_at.desc(), UserStory.id.desc())
+    result = await db.execute(query)
+    stories = [_user_story_to_dict(story, customer) for story, customer in result.all()]
+    # 聚合全部标签（用于前台标签墙），按频率排序
+    tag_counts: dict[str, int] = {}
+    for s in stories:
+        for t in s["tags"]:
+            tag_counts[t] = tag_counts.get(t, 0) + 1
+    all_tags = sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    return {"items": stories, "tags": [{"name": name, "count": cnt} for name, cnt in all_tags]}
+
+
+@router.post("/user-stories", status_code=201)
+async def create_user_story(
+    payload: dict,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    title = str(payload.get("title") or "").strip()
+    content = str(payload.get("content") or "").strip()
+    if not title or not content:
+        raise HTTPException(status_code=400, detail="标题和分享内容不能为空")
+    if len(title) > 200 or len(content) > 5000:
+        raise HTTPException(status_code=400, detail="标题或分享内容过长")
+    category = str(payload.get("category") or "life").strip()
+    # 标签化改造后 category 为兼容字段：不在枚举内时回退 life，不阻断提交
+    if category not in STORY_CATEGORIES:
+        category = "life"
+    tags = _clean_tags(payload.get("tags"))
+    story = UserStory(
+        customer_id=customer.id,
+        title=title,
+        content=content,
+        image_url=str(payload.get("image_url") or "") or None,
+        category=category,
+        tags=tags,
+        is_published=False,
+    )
+    db.add(story)
+    await db.commit()
+    await db.refresh(story)
+    return _user_story_to_dict(story, customer)
+
+
+@router.get("/user-stories/mine")
+async def list_my_user_stories(
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(UserStory).where(UserStory.customer_id == customer.id).order_by(UserStory.created_at.desc())
+    )
+    return [_user_story_to_dict(story, customer) for story in result.scalars().all()]
+
+
+@router.get("/user-stories/{story_id}")
+async def get_user_story(
+    story_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """前台公开：单条用户故事详情（仅已审核发布，供详情页展示）。"""
+    result = await db.execute(
+        select(UserStory, Customer)
+        .join(Customer, Customer.id == UserStory.customer_id)
+        .where(UserStory.id == story_id, UserStory.is_published.is_(True), Customer.is_active.is_(True))
+    )
+    row = result.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="用户故事不存在或未发布")
+    story, customer = row
+    return _user_story_to_dict(story, customer)
+
+
+@router.put("/user-stories/{story_id}")
+async def update_my_user_story(
+    story_id: int,
+    payload: dict,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(UserStory).where(UserStory.id == story_id, UserStory.customer_id == customer.id))
+    story = result.scalar_one_or_none()
+    if not story:
+        raise HTTPException(status_code=404, detail="用户故事不存在")
+    title = str(payload.get("title") or "").strip()
+    content = str(payload.get("content") or "").strip()
+    if not title or not content:
+        raise HTTPException(status_code=400, detail="标题和分享内容不能为空")
+    if len(title) > 200 or len(content) > 5000:
+        raise HTTPException(status_code=400, detail="标题或分享内容过长")
+    story.title = title
+    story.content = content
+    if "image_url" in payload:
+        story.image_url = str(payload.get("image_url") or "") or None
+    if "category" in payload:
+        category = str(payload.get("category") or "life").strip()
+        if category not in STORY_CATEGORIES:
+            category = "life"
+        story.category = category
+    if "tags" in payload:
+        story.tags = _clean_tags(payload.get("tags"))
+    # 编辑后强制重新审核，并清空驳回理由
+    story.is_published = False
+    story.reject_reason = None
+    await db.commit()
+    await db.refresh(story)
+    return _user_story_to_dict(story, customer)
+
+
+@router.delete("/user-stories/{story_id}")
+async def delete_my_user_story(
+    story_id: int,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    """用户删除自己的故事（物理删除）。"""
+    result = await db.execute(select(UserStory).where(UserStory.id == story_id, UserStory.customer_id == customer.id))
+    story = result.scalar_one_or_none()
+    if not story:
+        raise HTTPException(status_code=404, detail="用户故事不存在")
+    await db.delete(story)
+    await db.commit()
+    return {"message": "已删除"}
 
 
 # ---------- 页面内容持久化（SiteContent） ----------
@@ -302,6 +511,81 @@ async def admin_put_cms_content(
     merged = _deep_merge(base, content)
     await _save_page_content(db, page, merged)
     return {"message": "已保存", "page": page}
+
+
+@router.get("/admin/user-stories")
+async def admin_list_user_stories(
+    status: str | None = Query(None, description="按状态筛选：pending 待审核 / approved 已发布 / rejected 已驳回"),
+    category: str | None = Query(None, description="按分类筛选：yoga/outdoor/life"),
+    admin: AdminUser = Depends(require_admin()),
+    db: AsyncSession = Depends(get_db),
+):
+    query = (
+        select(UserStory, Customer)
+        .join(Customer, Customer.id == UserStory.customer_id)
+    )
+    if status == "pending":
+        query = query.where(UserStory.is_published.is_(False), UserStory.reject_reason.is_(None))
+    elif status == "approved":
+        query = query.where(UserStory.is_published.is_(True))
+    elif status == "rejected":
+        query = query.where(UserStory.is_published.is_(False), UserStory.reject_reason.is_not(None))
+    if category and category in STORY_CATEGORIES:
+        query = query.where(UserStory.category == category)
+    query = query.order_by(UserStory.created_at.desc(), UserStory.id.desc())
+    result = await db.execute(query)
+    return [_user_story_to_dict(story, customer) for story, customer in result.all()]
+
+
+@router.put("/admin/user-stories/{story_id}")
+async def admin_update_user_story(
+    story_id: int,
+    payload: dict,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(UserStory).where(UserStory.id == story_id))
+    story = result.scalar_one_or_none()
+    if not story:
+        raise HTTPException(status_code=404, detail="用户故事不存在")
+    for field in ("title", "content", "image_url"):
+        if field in payload:
+            setattr(story, field, str(payload[field] or "").strip() or None)
+    if "category" in payload:
+        category = str(payload.get("category") or "life").strip()
+        if category not in STORY_CATEGORIES:
+            category = "life"
+        story.category = category
+    if "tags" in payload:
+        story.tags = _clean_tags(payload.get("tags"))
+    if "is_published" in payload:
+        story.is_published = bool(payload["is_published"])
+        # 发布成功时清空驳回理由；撤下保留原驳回理由以便追溯
+        if story.is_published:
+            story.reject_reason = None
+    if "reject_reason" in payload:
+        # 驳回：填入理由并强制下架
+        story.reject_reason = str(payload["reject_reason"] or "").strip() or None
+        if story.reject_reason:
+            story.is_published = False
+    await db.commit()
+    await db.refresh(story)
+    customer = (await db.execute(select(Customer).where(Customer.id == story.customer_id))).scalar_one_or_none()
+    return _user_story_to_dict(story, customer)
+
+
+@router.delete("/admin/user-stories/{story_id}")
+async def admin_delete_user_story(
+    story_id: int,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(UserStory).where(UserStory.id == story_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="用户故事不存在")
+    await db.execute(delete(UserStory).where(UserStory.id == story_id))
+    await db.commit()
+    return {"message": "已删除"}
 
 
 def _deep_merge(base: dict, patch: dict) -> dict:

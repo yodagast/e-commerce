@@ -11,9 +11,9 @@
       topbar_right: '💬 在线客服 7×24 小时',
       search_placeholder: '搜索商品...',
       search_btn: '搜索',
-      hero_tag: 'NEW ARRIVALS',
-      hero_title: '全球潮流好物',
-      hero_sub: '精选优选，品质之选，即刻开启购物之旅',
+      hero_tag: 'MOVE WITH PURPOSE',
+      hero_title: '瑜伽与户外，向自然出发',
+      hero_sub: '为练习、远行与日常生活准备舒适耐用的装备',
       hero_cta: '立即选购',
       hot_categories: '热门分类',
       featured: '推荐商品',
@@ -26,7 +26,7 @@
       svc2_t: '安全支付', svc2_d: '多种支付方式保障',
       svc3_t: '7 天退换', svc3_d: '无理由退换货服务',
       svc4_t: '客服支持', svc4_d: '7×24 小时在线客服',
-      f_about_t: '关于我们', f_about_d: 'PyMall 是一家面向全球的时尚电商平台，提供高品质商品与优质服务。',
+      f_about_t: '关于 YOYOLE', f_about_d: 'YOYOLE 专注瑜伽与户外生活，让每一次呼吸和出发都更自在。',
       f_help_t: '客户服务', f_h1: '配送说明', f_h2: '退换政策', f_h3: '隐私条款',
       f_contact_t: '联系我们', f_pay_t: '支付方式', f_pay_d: '支付宝 · 微信支付 · Stripe',
     },
@@ -35,9 +35,9 @@
       topbar_right: '💬 24/7 Online Support',
       search_placeholder: 'Search products...',
       search_btn: 'Search',
-      hero_tag: 'NEW ARRIVALS',
-      hero_title: 'Global Trendy Picks',
-      hero_sub: 'Curated selection, quality choice, start shopping now',
+      hero_tag: 'MOVE WITH PURPOSE',
+      hero_title: 'Yoga and outdoor, closer to nature',
+      hero_sub: 'Comfortable, durable gear for practice, travel, and everyday movement',
       hero_cta: 'Shop Now',
       hot_categories: 'Hot Categories',
       featured: 'Featured Products',
@@ -50,7 +50,7 @@
       svc2_t: 'Secure Payment', svc2_d: 'Multiple payment methods',
       svc3_t: '7-Day Returns', svc3_d: 'Hassle-free returns',
       svc4_t: 'Support', svc4_d: '24/7 online customer service',
-      f_about_t: 'About Us', f_about_d: 'PyMall is a global fashion e-commerce platform offering quality products and services.',
+      f_about_t: 'About YOYOLE', f_about_d: 'YOYOLE creates thoughtful gear for yoga, outdoor living, and everyday movement.',
       f_help_t: 'Customer Service', f_h1: 'Shipping Info', f_h2: 'Return Policy', f_h3: 'Privacy Policy',
       f_contact_t: 'Contact Us', f_pay_t: 'Payment', f_pay_d: 'Alipay · WeChat Pay · Stripe',
     },
@@ -66,7 +66,7 @@
 
   // 本地化静态文案
   function localize() {
-    document.title = ht('hero_title') + ' | PyMall';
+    document.title = ht('hero_title') + ' | YOYOLE';
     setText('topbar-left', ht('topbar_left'));
     setText('topbar-right', ht('topbar_right'));
     setText('search-input', ''); // placeholder 单独处理

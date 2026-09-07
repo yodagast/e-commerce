@@ -3,7 +3,14 @@ name: ecommerce-dev
 description: PyMall 电商独立站（FastAPI + async SQLAlchemy + PostgreSQL + Vue 3）的开发指南与常见陷阱。当在这个仓库中开发前端、后端、测试或修复 bug 时使用。
 ---
 
-# PyMall 电商独立站 — 开发指南（SKILL）
+# YOYOLE 瑜伽户外独立站 — 开发指南（SKILL）
+
+## 品牌规范
+
+- 品牌名称：YOYOLE；业务主题：瑜伽练习、户外生活、徒步与自然探索。
+- 全站 Logo 统一使用 `static/img/yoyole-logo.svg`，共享导航由 `static/js/pymall.js` 渲染，后台页面也必须引用同一资源。
+- 不得新增潮流玩具、泛时尚、电子产品、图书等旧主题文案；商品种子内容应保持瑜伽/户外相关。
+- 修改 `static/js/pymall.js` 后，所有引用该文件的 HTML 页面必须递增 query 版本号，避免浏览器缓存旧品牌内容。
 
 ## 技术栈
 

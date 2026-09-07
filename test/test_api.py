@@ -146,10 +146,10 @@ class TestPublic:
 
     def test_products_search_chinese(self):
         # 中文搜索（JSONB #>> 修复的回归用例）
-        r = requests.get(f"{BASE}/api/products", params={"q": "手机"}, headers=H)
+        r = requests.get(f"{BASE}/api/products", params={"q": "瑜伽"}, headers=H)
         assert r.status_code == 200
         names = [p.get("display_name", "") for p in r.json()]
-        assert any("手机" in n or "Phone" in n for n in names)
+        assert any("瑜伽" in n or "Yoga" in n for n in names)
 
     def test_products_search_none(self):
         r = requests.get(f"{BASE}/api/products", params={"q": "不存在的商品xyz"}, headers=H)
@@ -397,14 +397,14 @@ class TestCatalogFilter:
         assert sales == sorted(sales, reverse=True)
 
     def test_autocomplete_zh(self):
-        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "智能"}, headers=H)
+        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "瑜伽"}, headers=H)
         assert r.status_code == 200
         results = r.json()
         assert isinstance(results, list) and len(results) > 0
         assert all("id" in x and "name_zh" in x for x in results)
 
     def test_autocomplete_en(self):
-        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "phone"}, headers=H)
+        r = requests.get(f"{BASE}/api/products/autocomplete", params={"q": "yoga"}, headers=H)
         assert r.status_code == 200
         assert len(r.json()) > 0
 
@@ -636,6 +636,105 @@ class TestReviews:
         assert r.status_code == 401
 
 
+# ---------- 用户故事 ----------
+class TestUserStories:
+    def test_upload_edit_moderate_and_delete(self, buyer_token, admin_token):
+        """用户故事完整流程：图片上传 -> 投稿 -> 本人编辑 -> 管理员发布 -> 公开 -> 删除。"""
+        image = requests.post(
+            f"{BASE}/api/user-story-upload",
+            files={"file": ("story.png", b"fake-png-content", "image/png")},
+            headers=buyer_token,
+        )
+        assert image.status_code == 201, image.text
+        image_url = image.json()["url"]
+
+        created = requests.post(f"{BASE}/api/user-stories", json={
+            "title": "我的初次分享",
+            "content": "这是我的用户故事。",
+            "image_url": image_url,
+        }, headers=buyer_token)
+        assert created.status_code == 201, created.text
+        story_id = created.json()["id"]
+        assert created.json()["is_published"] is False
+        public_before = requests.get(f"{BASE}/api/user-stories").json()
+        public_items = public_before["items"] if isinstance(public_before, dict) else public_before
+        assert not any(s["id"] == story_id for s in public_items)
+
+        mine = requests.get(f"{BASE}/api/user-stories/mine", headers=buyer_token)
+        assert mine.status_code == 200
+        assert mine.json()[0]["image_url"] == image_url
+
+        edited = requests.put(f"{BASE}/api/user-stories/{story_id}", json={
+            "title": "编辑后的分享",
+            "content": "我补充了更多故事内容。",
+            "image_url": image_url,
+        }, headers=buyer_token)
+        assert edited.status_code == 200, edited.text
+        assert edited.json()["title"] == "编辑后的分享"
+        assert edited.json()["is_published"] is False
+
+        published = requests.put(f"{BASE}/api/admin/user-stories/{story_id}", json={
+            "is_published": True,
+        }, headers=admin_token)
+        assert published.status_code == 200, published.text
+        public_resp = requests.get(f"{BASE}/api/user-stories").json()
+        public = public_resp["items"] if isinstance(public_resp, dict) else public_resp
+        public_story = next(s for s in public if s["id"] == story_id)
+        assert public_story["content"] == "我补充了更多故事内容。"
+        assert public_story["image_url"] == image_url
+
+        removed = requests.delete(f"{BASE}/api/admin/user-stories/{story_id}", headers=admin_token)
+        assert removed.status_code == 200, removed.text
+
+    def test_user_story_requires_auth(self):
+        assert requests.post(f"{BASE}/api/user-stories", json={"title": "t", "content": "c"}).status_code == 401
+        assert requests.get(f"{BASE}/api/user-stories/mine").status_code == 401
+
+    def test_public_detail_endpoint(self, buyer_token, admin_token):
+        """公开详情接口：仅已发布可见；未发布/不存在返回 404。"""
+        created = requests.post(f"{BASE}/api/user-stories", json={
+            "title": "详情接口测试",
+            "content": "详情内容。",
+        }, headers=buyer_token)
+        assert created.status_code == 201, created.text
+        story_id = created.json()["id"]
+
+        # 未发布时详情不可见
+        detail_pending = requests.get(f"{BASE}/api/user-stories/{story_id}")
+        assert detail_pending.status_code == 404
+
+        # 管理员发布后可见
+        requests.put(f"{BASE}/api/admin/user-stories/{story_id}", json={"is_published": True}, headers=admin_token)
+        detail = requests.get(f"{BASE}/api/user-stories/{story_id}")
+        assert detail.status_code == 200, detail.text
+        assert detail.json()["id"] == story_id
+        assert detail.json()["title"] == "详情接口测试"
+
+        # 不存在的 id
+        assert requests.get(f"{BASE}/api/user-stories/999999999").status_code == 404
+        # 清理
+        requests.delete(f"{BASE}/api/admin/user-stories/{story_id}", headers=admin_token)
+
+    def test_user_delete_own_story(self, buyer_token, admin_token):
+        """用户可删除自己的故事；删除后公开列表和详情均不可见。"""
+        created = requests.post(f"{BASE}/api/user-stories", json={
+            "title": "待删除的故事",
+            "content": "这段内容将被删除。",
+        }, headers=buyer_token)
+        assert created.status_code == 201, created.text
+        story_id = created.json()["id"]
+
+        # 非本人不可删（换一个临时用户 token 无法轻易获得，仅验证无 token 401 与本人删除）
+        assert requests.delete(f"{BASE}/api/user-stories/{story_id}").status_code == 401
+
+        deleted = requests.delete(f"{BASE}/api/user-stories/{story_id}", headers=buyer_token)
+        assert deleted.status_code == 200, deleted.text
+
+        mine = requests.get(f"{BASE}/api/user-stories/mine", headers=buyer_token).json()
+        assert not any(s["id"] == story_id for s in mine)
+        assert requests.get(f"{BASE}/api/user-stories/{story_id}").status_code == 404
+
+
 # ---------- 订单与支付接口 ----------
 class TestOrders:
     @pytest.fixture()
@@ -830,7 +929,8 @@ class TestAdmin:
     def test_admin_categories(self, admin_token):
         r = requests.get(f"{BASE}/api/admin/categories", headers=admin_token)
         assert r.status_code == 200
-        assert len(r.json()) >= 1
+        names = {c["name_i18n"].get("zh") for c in r.json()}
+        assert {"瑜伽套装", "裤子", "上衣", "其他"}.issubset(names)
 
     def test_admin_stock_movements(self, admin_token):
         r = requests.get(f"{BASE}/api/admin/stock-movements", headers=admin_token)
@@ -882,7 +982,26 @@ class TestAdmin:
                    "sort_order": 999, "is_active": True}
         r = requests.post(f"{BASE}/api/admin/categories", json=payload, headers=admin_token)
         assert r.status_code == 201, r.text
-        assert r.json()["code"] == code
+        category = r.json()
+        assert category["code"] == code
+
+        updated = requests.put(f"{BASE}/api/admin/categories/{category['id']}", json={
+            "name_i18n": {"zh": "更新分类", "en": "Updated Category"},
+        }, headers=admin_token)
+        assert updated.status_code == 200, updated.text
+        assert updated.json()["name_i18n"]["zh"] == "更新分类"
+
+        duplicate = requests.post(f"{BASE}/api/admin/categories", json=payload, headers=admin_token)
+        assert duplicate.status_code == 409
+
+        deleted = requests.delete(f"{BASE}/api/admin/categories/{category['id']}", headers=admin_token)
+        assert deleted.status_code == 200, deleted.text
+
+    def test_admin_cannot_delete_category_in_use(self, admin_token):
+        products = requests.get(f"{BASE}/api/admin/products", headers=admin_token).json()
+        category_id = next(p["category_id"] for p in products if p.get("category_id"))
+        r = requests.delete(f"{BASE}/api/admin/categories/{category_id}", headers=admin_token)
+        assert r.status_code == 409
 
     def test_admin_create_product_missing_fields(self, admin_token):
         # 缺必填字段应 422

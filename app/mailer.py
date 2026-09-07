@@ -22,7 +22,6 @@ async def send_email(to: str, subject: str, body: str, html: str | None = None) 
             "[mailer][dev] 模拟发送邮件\n  To: %s\n  Subject: %s\n%s",
             to, subject, html or body,
         )
-        print(f"\n------------- 模拟邮件 -------------\n收件人: {to}\n主题: {subject}\n{html or body}\n-------------------------------------\n")
         return False, None
 
     # 已配置 SMTP：真实发送

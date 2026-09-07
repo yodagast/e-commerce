@@ -428,6 +428,25 @@ class SiteContent(Base):
     )
 
 
+class UserStory(Base):
+    """用户故事投稿，发布前由后台审核。"""
+    __tablename__ = "user_stories"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    content: Mapped[str] = mapped_column(Text)
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    category: Mapped[str] = mapped_column(String(30), default="life", index=True)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    reject_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+
 class NewsletterSubscriber(Base):
     """新闻订阅者（首页/页脚「订阅优惠信息」）"""
     __tablename__ = "newsletter_subscribers"

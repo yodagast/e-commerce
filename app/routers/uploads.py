@@ -12,7 +12,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from app.deps import require_admin
+from app.deps import get_current_customer, require_admin
 from app.models import AdminUser
 
 router = APIRouter(prefix="/api", tags=["uploads"])
@@ -84,7 +84,11 @@ async def upload_file(
     }:
         raise HTTPException(status_code=400, detail="视频 content-type 不合法")
 
-    # 大小校验（边读边写，超出即中止删除）
+    return await _save_upload(file, kind, ext)
+
+
+async def _save_upload(file: UploadFile, kind: str, ext: str) -> dict:
+    """校验后的上传文件落盘并返回公开 URL。"""
     limit = MAX_IMAGE_SIZE if kind == "image" else MAX_VIDEO_SIZE
     now = datetime.now()
     day_dir = UPLOAD_DIR / now.strftime("%Y/%m/%d")
@@ -113,3 +117,15 @@ async def upload_file(
     await file.close()
     url = f"/static/uploads/{now.strftime('%Y/%m/%d')}/{fname}"
     return {"url": url, "kind": kind, "size": written}
+
+
+@router.post("/user-story-upload", status_code=201)
+async def upload_user_story_image(
+    file: UploadFile = File(...),
+    customer=Depends(get_current_customer),
+):
+    """登录用户上传用户故事配图。"""
+    ext = _safe_ext(file.filename or "", file.content_type)
+    if ext not in ALLOWED_IMAGE_EXT:
+        raise HTTPException(status_code=400, detail=f"图片类型不允许：{ext or '未知'}")
+    return await _save_upload(file, "image", ext)

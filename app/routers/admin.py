@@ -345,10 +345,17 @@ async def admin_create_category(
     admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
     db: AsyncSession = Depends(get_db),
 ):
+    code = str(payload.get("code") or "").strip().lower()
+    name_i18n = payload.get("name_i18n") or {"zh": "", "en": ""}
+    if not code or not name_i18n.get("zh"):
+        raise HTTPException(status_code=400, detail="分类编码和中文名称不能为空")
+    existing = await db.execute(select(Category).where(Category.code == code))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="分类编码已存在")
     cat = Category(
-        code=payload.get("code", ""),
+        code=code,
         parent_id=payload.get("parent_id"),
-        name_i18n=payload.get("name_i18n", {"zh": "", "en": ""}),
+        name_i18n=name_i18n,
         sort_order=int(payload.get("sort_order", 0)),
         is_active=payload.get("is_active", True),
     )
@@ -356,6 +363,56 @@ async def admin_create_category(
     await db.commit()
     await db.refresh(cat)
     return cat
+
+
+@router.put("/categories/{category_id}", response_model=CategoryOut)
+async def admin_update_category(
+    category_id: int,
+    payload: dict,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Category).where(Category.id == category_id))
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="分类不存在")
+    if "code" in payload:
+        code = str(payload["code"] or "").strip().lower()
+        if not code:
+            raise HTTPException(status_code=400, detail="分类编码不能为空")
+        duplicate = await db.execute(select(Category).where(Category.code == code, Category.id != category_id))
+        if duplicate.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="分类编码已存在")
+        category.code = code
+    if "name_i18n" in payload:
+        name_i18n = payload["name_i18n"] or {}
+        if not name_i18n.get("zh"):
+            raise HTTPException(status_code=400, detail="中文名称不能为空")
+        category.name_i18n = name_i18n
+    for field in ("parent_id", "sort_order", "is_active"):
+        if field in payload:
+            setattr(category, field, payload[field])
+    await db.commit()
+    await db.refresh(category)
+    return category
+
+
+@router.delete("/categories/{category_id}", response_model=Message)
+async def admin_delete_category(
+    category_id: int,
+    admin: AdminUser = Depends(require_admin({"superadmin", "operator"})),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Category).where(Category.id == category_id))
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="分类不存在")
+    used = await db.execute(select(Product.id).where(Product.category_id == category_id).limit(1))
+    if used.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="该分类仍有关联商品，不能删除")
+    await db.delete(category)
+    await db.commit()
+    return Message(message="分类已删除")
 
 
 @router.get("/stock-movements")

@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """全局配置，可通过环境变量或 .env 覆盖"""
-    APP_NAME: str = "PythonShop 电商独立站"
+    APP_NAME: str = "YOYOLE 瑜伽户外生活"
     DEBUG: bool = True
 
     # 数据库连接（asyncpg 异步驱动）

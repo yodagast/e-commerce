@@ -79,6 +79,18 @@ PAGE_ASSERTS = {
         "move-to-cart",          # 移入购物车
         "wishlist_empty",        # 空态
     ],
+    "story-detail.html": [
+        "mountPyMall",
+        "用户故事详情",           # 页面标题
+        "'/api/user-stories/'",  # 详情接口
+        "sd-card",               # 详情卡片
+    ],
+    "account.html": [
+        "mountPyMall",
+        "我的故事",               # 我的故事 tab
+        "'/api/user-stories/mine'",  # 我的投稿接口
+        "story-detail.html",     # 已发布故事链接详情页
+    ],
 }
 
 # 每页引用的静态资源（正则抓取后断言全部可访问）
@@ -127,7 +139,7 @@ def test_nav_has_about_link():
     assert 'href="/about.html"' in r.text
 
 
-@pytest.mark.parametrize("page", ["index.html", "products.html", "cart.html", "orders.html", "about.html", "wishlist.html"])
+@pytest.mark.parametrize("page", ["index.html", "products.html", "cart.html", "orders.html", "about.html", "wishlist.html", "story-detail.html", "account.html"])
 def test_common_components_present(page):
     """所有前端页面都应引用 pymall.js（含共享组件）"""
     r = requests.get(f"{BASE}/{page}")

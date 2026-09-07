@@ -33,7 +33,7 @@
 
   function render(p) {
     var root = document.getElementById('detail-root');
-    document.title = (p.display_name || p.sku_code) + ' - PyMall';
+    document.title = (p.display_name || p.sku_code) + ' - YOYOLE';
     var lang = App.getLang();
 
     // 主图

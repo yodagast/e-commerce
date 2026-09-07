@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户故事详情 - YOYOLE</title>
+  <link rel="stylesheet" href="/static/css/jjshouse.css">
+  <style>
+    .sd-wrap { max-width: 760px; margin: 0 auto; padding: 28px 0 48px; }
+    .sd-back { display: inline-flex; align-items: center; gap: 6px; color: var(--jjs-gray, #64748b); font-size: 13.5px; font-weight: 600; text-decoration: none; margin-bottom: 20px; transition: color .2s; }
+    .sd-back:hover { color: var(--jjs-primary, #d81e53); }
+    .sd-card { background: #fff; border: 1px solid var(--jjs-border, #eee); border-radius: 16px; overflow: hidden; }
+    .sd-img { width: 100%; max-height: 420px; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+    .sd-img img { width: 100%; height: auto; display: block; object-fit: cover; }
+    .sd-img-placeholder { height: 200px; color: #cbd5e1; display: flex; align-items: center; justify-content: center; }
+    .sd-body { padding: 30px 34px 36px; }
+    .sd-title { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+    .sd-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--jjs-border, #eee); color: var(--jjs-gray, #64748b); font-size: 13px; }
+    .sd-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #f06b8a, var(--jjs-primary, #d81e53)); color: #fff; font-size: 14px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+    .sd-author { font-weight: 700; color: #334155; }
+    .sd-time { color: #94a3b8; }
+    .sd-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .sd-tag { font-size: 11.5px; font-weight: 700; color: var(--jjs-primary, #d81e53); background: rgba(216, 30, 83, .08); border-radius: 999px; padding: 4px 12px; }
+    .sd-content { font-size: 15.5px; line-height: 2; color: #475569; white-space: pre-wrap; word-break: break-word; }
+    .sd-empty { text-align: center; padding: 70px 20px; color: var(--jjs-gray, #64748b); }
+    @media (max-width: 640px) { .sd-body { padding: 22px 18px 26px; } .sd-title { font-size: 21px; } }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <main-nav></main-nav>
+
+    <div class="container">
+      <div class="sd-wrap">
+        <!-- 加载中 -->
+        <div class="loading" v-if="loading">
+          <div class="spinner"></div>{{ t('loading') }}
+        </div>
+
+        <!-- 未找到/失败 -->
+        <div class="empty" v-else-if="notFound" style="padding-top:40px">
+          <base-icon name="review" :size="52" style="color:#cbd5e1"></base-icon>
+          <div style="margin-top:12px">用户故事不存在或未发布</div>
+          <button class="btn btn-primary" style="margin-top:18px" @click="goStories">返回用户故事</button>
+        </div>
+
+        <!-- 详情主体 -->
+        <div v-else-if="story">
+          <a class="sd-back" href="/about.html#user-stories">
+            <base-icon name="chevronRight" :size="16" style="transform:rotate(180deg)"></base-icon>
+            返回用户故事
+          </a>
+          <article class="sd-card">
+            <div class="sd-img" v-if="story.image_url && !imgError">
+              <img :src="story.image_url" :alt="story.title" @error="imgError = true">
+            </div>
+            <div class="sd-img sd-img-placeholder" v-else>
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            </div>
+            <div class="sd-body">
+              <h1 class="sd-title">{{ story.title }}</h1>
+              <div class="sd-meta">
+                <span class="sd-avatar">{{ (story.author || 'U').charAt(0).toUpperCase() }}</span>
+                <span class="sd-author">{{ story.author }}</span>
+                <span class="sd-time" v-if="story.created_at">{{ formatTime(story.created_at) }}</span>
+                <span class="sd-tags">
+                  <span v-for="tg in (story.tags || [])" :key="tg" class="sd-tag">{{ tg }}</span>
+                </span>
+              </div>
+              <div class="sd-content">{{ story.content }}</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <site-footer></site-footer>
+    <auth-modal></auth-modal>
+  </div>
+
+  <script src="/static/js/vue.global.prod.js"></script>
+  <script src="/static/js/pymall.js?v=20"></script>
+  <script>
+    (function () {
+      var PyMall = window.PyMall;
+      var Vue = PyMall.Vue;
+      var t = PyMall.t;
+
+      window.mountPyMall({
+        setup() {
+          var state = Vue.reactive({
+            story: null,
+            loading: true,
+            notFound: false,
+            imgError: false,
+          });
+
+          function qs(name) {
+            var m = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+            return m ? decodeURIComponent(m[1]) : '';
+          }
+
+          function formatTime(s) {
+            if (!s) return '';
+            var d = new Date(s);
+            if (isNaN(d.getTime())) return String(s).replace('T', ' ').slice(0, 10);
+            var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+          }
+
+          function load() {
+            var id = qs('id');
+            if (!id) {
+              state.notFound = true;
+              state.loading = false;
+              return;
+            }
+            PyMall.api('/api/user-stories/' + id)
+              .then(function (d) {
+                state.story = d || null;
+                if (!d) state.notFound = true;
+                state.loading = false;
+              })
+              .catch(function () {
+                state.notFound = true;
+                state.loading = false;
+              });
+          }
+
+          function goStories() { location.href = '/about.html#user-stories'; }
+          load();
+
+          return {
+            t: t,
+            story: Vue.computed(function () { return state.story; }),
+            loading: Vue.computed(function () { return state.loading; }),
+            notFound: Vue.computed(function () { return state.notFound; }),
+            imgError: Vue.computed({ get: function () { return state.imgError; }, set: function (v) { state.imgError = v; } }),
+            formatTime: formatTime,
+            goStories: goStories,
+          };
+        },
+      });
+    })();
+  </script>
+</body>
+</html>
