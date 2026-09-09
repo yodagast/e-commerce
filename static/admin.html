@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YOYOLE 管理后台</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    /* 成长经历与品牌价值观：表格输入 */
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .admin-table th { text-align: left; padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-weight: 600; }
+    .admin-table td { padding: 6px 8px; border: 1px solid #e2e8f0; vertical-align: top; }
+    .admin-table input { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; }
+    .admin-table input:focus { outline: none; border-color: #e02e24; }
+    .row-del-btn { background: none; border: 1px solid #e2e8f0; border-radius: 6px; color: #e02e24; cursor: pointer; font-size: 13px; padding: 4px 10px; }
+    .row-del-btn:hover { background: #fee2e2; }
+  </style>
 </head>
 <body>
   <div id="admin-login" class="container" style="max-width:420px;margin-top:80px">
@@ -195,16 +205,41 @@
         </div>
         <div class="card" style="padding:20px;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
           <h3 style="margin-bottom:8px">成长经历与品牌价值观</h3>
-          <p style="font-size:13px;color:#64748b;margin-bottom:14px">请按示例 JSON 编辑。每项必须包含 time/title/desc（成长经历）或 title/desc（价值观），zh/en 为中英文内容。</p>
+          <p style="font-size:13px;color:#64748b;margin-bottom:14px">以表格形式维护成长历程时间线与品牌价值观，中英文分别填写，保存后前台「关于我们」页实时生效。</p>
           <div class="form-group">
-            <label>成长经历</label>
-            <textarea id="cms-milestones-json" rows="8" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical;font-family:monospace"></textarea>
+            <label style="font-weight:700">成长经历（时间线）</label>
+            <table class="admin-table" style="margin-top:8px">
+              <thead>
+                <tr>
+                  <th style="width:110px">时间</th>
+                  <th>标题（中）</th>
+                  <th>标题（EN）</th>
+                  <th>描述（中）</th>
+                  <th>描述（EN）</th>
+                  <th style="width:70px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="cms-milestones-rows"></tbody>
+            </table>
+            <button type="button" class="btn btn-outline btn-sm" id="cms-milestones-add" style="margin-top:8px">+ 添加经历</button>
           </div>
-          <div class="form-group">
-            <label>品牌价值观</label>
-            <textarea id="cms-values-json" rows="7" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical;font-family:monospace"></textarea>
+          <div class="form-group" style="margin-top:18px">
+            <label style="font-weight:700">品牌价值观</label>
+            <table class="admin-table" style="margin-top:8px">
+              <thead>
+                <tr>
+                  <th>标题（中）</th>
+                  <th>标题（EN）</th>
+                  <th>描述（中）</th>
+                  <th>描述（EN）</th>
+                  <th style="width:70px">操作</th>
+                </tr>
+              </thead>
+              <tbody id="cms-values-rows"></tbody>
+            </table>
+            <button type="button" class="btn btn-outline btn-sm" id="cms-values-add" style="margin-top:8px">+ 添加价值观</button>
           </div>
-          <div style="display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;margin-top:18px">
             <button class="btn btn-primary" id="cms-about-save">保存成长经历与价值观</button>
             <span id="cms-about-status" style="font-size:13px;color:#64748b"></span>
           </div>
@@ -669,6 +704,106 @@
       }
 
       // ---------- 内容管理（品牌故事 / 首页轮播） ----------
+      // ---- 成长经历 / 品牌价值观：表格输入 ----
+      function cmsRowHtml(fields, values, timeField) {
+        var tds = fields.map(function (f) {
+          var v = values ? (values[f] || '') : '';
+          return '<td><input data-field="' + f + '" value="' + String(v).replace(/"/g, '&quot;') + '"></td>';
+        }).join('');
+        return '<tr>' + tds + '<td><button type="button" class="row-del-btn" onclick="Admin.delCmsRow(this)">删除</button></td></tr>';
+      }
+
+      function cmsMilestoneRowHtml(values) {
+        values = values || {};
+        var timeV = (values.time && (values.time.zh || values.time.en || '')) || '';
+        var titleZ = (values.title && values.title.zh) || '';
+        var titleE = (values.title && values.title.en) || '';
+        var descZ = (values.desc && values.desc.zh) || '';
+        var descE = (values.desc && values.desc.en) || '';
+        var esc = function (s) { return String(s).replace(/"/g, '&quot;'); };
+        return '<tr>'
+          + '<td><input data-field="time" value="' + esc(timeV) + '" placeholder="如 2020"></td>'
+          + '<td><input data-field="title-zh" value="' + esc(titleZ) + '"></td>'
+          + '<td><input data-field="title-en" value="' + esc(titleE) + '"></td>'
+          + '<td><input data-field="desc-zh" value="' + esc(descZ) + '"></td>'
+          + '<td><input data-field="desc-en" value="' + esc(descE) + '"></td>'
+          + '<td><button type="button" class="row-del-btn" onclick="Admin.delCmsRow(this)">删除</button></td>'
+          + '</tr>';
+      }
+
+      function cmsValueRowHtml(values) {
+        values = values || {};
+        var titleZ = (values.title && values.title.zh) || '';
+        var titleE = (values.title && values.title.en) || '';
+        var descZ = (values.desc && values.desc.zh) || '';
+        var descE = (values.desc && values.desc.en) || '';
+        var esc = function (s) { return String(s).replace(/"/g, '&quot;'); };
+        return '<tr>'
+          + '<td><input data-field="title-zh" value="' + esc(titleZ) + '"></td>'
+          + '<td><input data-field="title-en" value="' + esc(titleE) + '"></td>'
+          + '<td><input data-field="desc-zh" value="' + esc(descZ) + '"></td>'
+          + '<td><input data-field="desc-en" value="' + esc(descE) + '"></td>'
+          + '<td><button type="button" class="row-del-btn" onclick="Admin.delCmsRow(this)">删除</button></td>'
+          + '</tr>';
+      }
+
+      function renderCmsTables(milestones, values) {
+        var mRows = (milestones || []).map(cmsMilestoneRowHtml).join('');
+        document.getElementById('cms-milestones-rows').innerHTML = mRows || cmsMilestoneRowHtml();
+        var vRows = (values || []).map(cmsValueRowHtml).join('');
+        document.getElementById('cms-values-rows').innerHTML = vRows || cmsValueRowHtml();
+      }
+
+      function collectCmsMilestones() {
+        var rows = Array.prototype.slice.call(document.querySelectorAll('#cms-milestones-rows tr'));
+        return rows.map(function (tr) {
+          var inputs = tr.querySelectorAll('input');
+          var get = function (f) { return (tr.querySelector('input[data-field="' + f + '"]') || {}).value || ''; };
+          var time = get('time').trim();
+          var titleZ = get('title-zh').trim();
+          var titleE = get('title-en').trim();
+          var descZ = get('desc-zh').trim();
+          var descE = get('desc-en').trim();
+          if (!titleZ && !titleE && !descZ && !descE && !time) return null; // 空行忽略
+          return {
+            time: { zh: time, en: time },
+            title: { zh: titleZ, en: titleE },
+            desc: { zh: descZ, en: descE },
+          };
+        }).filter(function (x) { return x !== null; });
+      }
+
+      function collectCmsValues() {
+        var rows = Array.prototype.slice.call(document.querySelectorAll('#cms-values-rows tr'));
+        return rows.map(function (tr) {
+          var titleZ = (tr.querySelector('input[data-field="title-zh"]') || {}).value || '';
+          var titleE = (tr.querySelector('input[data-field="title-en"]') || {}).value || '';
+          var descZ = (tr.querySelector('input[data-field="desc-zh"]') || {}).value || '';
+          var descE = (tr.querySelector('input[data-field="desc-en"]') || {}).value || '';
+          if (!titleZ && !titleE && !descZ && !descE) return null;
+          return { title: { zh: titleZ, en: titleE }, desc: { zh: descZ, en: descE } };
+        }).filter(function (x) { return x !== null; });
+      }
+
+      function delCmsRow(btn) {
+        var tbody = btn.closest('tbody');
+        if (tbody && tbody.rows.length <= 1) {
+          // 最后一行：清空输入而不是删除（保证始终至少一行可编辑）
+          btn.closest('tr').querySelectorAll('input').forEach(function (i) { i.value = ''; });
+        } else {
+          btn.closest('tr').remove();
+        }
+      }
+
+      function addCmsMilestoneRow() {
+        document.getElementById('cms-milestones-rows').insertAdjacentHTML('beforeend', cmsMilestoneRowHtml());
+      }
+      function addCmsValueRow() {
+        document.getElementById('cms-values-rows').insertAdjacentHTML('beforeend', cmsValueRowHtml());
+      }
+      document.getElementById('cms-milestones-add').onclick = addCmsMilestoneRow;
+      document.getElementById('cms-values-add').onclick = addCmsValueRow;
+
       function loadCmsContent() {
         api('/api/admin/cms-content?page=about')
           .then(function (d) {
@@ -679,8 +814,7 @@
             document.getElementById('cms-story-content-en').value = (d.story_content && d.story_content.en) || '';
             var img = story.image || '';
             renderCmsStoryImage(img);
-            document.getElementById('cms-milestones-json').value = JSON.stringify(d.milestones || [], null, 2);
-            document.getElementById('cms-values-json').value = JSON.stringify(d.values || [], null, 2);
+            renderCmsTables(d.milestones, d.values);
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
         loadBannerList();
@@ -743,7 +877,7 @@
               var imgHtml = b.image_url
                 ? '<img src="' + b.image_url + '" style="width:64px;height:40px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'">'
                 : '<span style="color:#cbd5e1;font-size:12px">无图</span>';
-              var act = '<button class="btn btn-outline btn-sm" onclick="Admin.editBanner(' + b.id + ')">编辑</button> '
+              var act = '<a class="btn btn-outline btn-sm" href="/admin-banner-edit.html?id=' + b.id + '" style="text-decoration:none;display:inline-block">编辑</a> '
                 + '<button class="btn btn-danger btn-sm" onclick="Admin.delBanner(' + b.id + ')">删除</button>';
               return '<tr><td>' + b.id + '</td><td>' + imgHtml + '</td><td>' + (b.title || '-') + '</td>'
                 + '<td>' + (b.subtitle || '-') + '</td><td>' + (b.is_active ? '<span class="badge" style="background:#dcfce7;color:#166534">启用</span>' : '<span class="badge" style="background:#e2e8f0;color:#475569">停用</span>') + '</td>'
@@ -751,53 +885,8 @@
             }).join('');
             wrap.innerHTML =
               '<table class="admin-table"><thead><tr><th>ID</th><th>图</th><th>标题</th><th>副标题</th><th>状态</th><th>操作</th></tr></thead><tbody>'
-              + (rows || '<tr><td colspan="6">暂无轮播，可在首页代码中配置</td></tr>') + '</tbody></table>'
-              + '<button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="Admin.addBanner()">+ 新增轮播</button>';
-          })
-          .catch(function (e) { App.toast(e.message, 'error'); });
-      }
-
-      function addBanner() {
-        var title = prompt('轮播标题（中文）');
-        if (title === null) return;
-        var subtitle = prompt('轮播副标题', '');
-        var linkUrl = prompt('跳转链接（如 /products.html）', '');
-        var imgUrl = prompt('图片 URL（可先上传后粘贴）', '');
-        api('/api/admin/banners', {
-          method: 'POST',
-          body: {
-            placement: 'home_hero',
-            title_i18n: { zh: title, en: title },
-            subtitle_i18n: { zh: subtitle || '', en: '' },
-            image_url: imgUrl || null,
-            link_url: linkUrl || null,
-            sort_order: 0,
-            is_active: true,
-          },
-        }).then(function () { App.toast('轮播已创建', 'success'); loadBannerList(); })
-          .catch(function (e) { App.toast(e.message, 'error'); });
-      }
-
-      function editBanner(id) {
-        api('/api/admin/banners?placement=home_hero')
-          .then(function (list) {
-            var b = list.filter(function (x) { return x.id === id; })[0];
-            if (!b) { App.toast('轮播不存在', 'error'); return; }
-            var title = prompt('轮播标题（中文）', b.title || '');
-            if (title === null) return;
-            var subtitle = prompt('轮播副标题', b.subtitle || '');
-            var linkUrl = prompt('跳转链接', b.link_url || '');
-            var imgUrl = prompt('图片 URL', b.image_url || '');
-            api('/api/admin/banners/' + id, {
-              method: 'PUT',
-              body: {
-                title_i18n: { zh: title, en: title },
-                subtitle_i18n: { zh: subtitle || '', en: '' },
-                image_url: imgUrl || null,
-                link_url: linkUrl || null,
-              },
-            }).then(function () { App.toast('轮播已更新', 'success'); loadBannerList(); })
-              .catch(function (e) { App.toast(e.message, 'error'); });
+              + (rows || '<tr><td colspan="6">暂无轮播</td></tr>') + '</tbody></table>'
+              + '<a class="btn btn-primary btn-sm" style="margin-top:12px;text-decoration:none;display:inline-block" href="/admin-banner-edit.html?new=1">+ 新增轮播</a>';
           })
           .catch(function (e) { App.toast(e.message, 'error'); });
       }
@@ -836,9 +925,10 @@
         delSubscriber: delSubscriber,
         editProduct: editProduct, closeProductModal: closeProductModal,
         removeGalleryImage: removeGalleryImage,
-        addBanner: addBanner, editBanner: editBanner, delBanner: delBanner,
+        delBanner: delBanner,
         editCategory: editCategory, delCategory: delCategory,
         delUserStory: delUserStory, setStoryFilter: setStoryFilter,
+        delCmsRow: delCmsRow,
       };
 
       document.getElementById('admin-login-btn').onclick = login;
@@ -936,16 +1026,8 @@
         }).catch(function (e) { App.toast(e.message, 'error'); });
       };
       document.getElementById('cms-about-save').onclick = function () {
-        var milestones;
-        var values;
-        try {
-          milestones = JSON.parse(document.getElementById('cms-milestones-json').value || '[]');
-          values = JSON.parse(document.getElementById('cms-values-json').value || '[]');
-          if (!Array.isArray(milestones) || !Array.isArray(values)) throw new Error('必须是数组');
-        } catch (e) {
-          App.toast('成长经历和价值观必须是有效 JSON 数组', 'error');
-          return;
-        }
+        var milestones = collectCmsMilestones();
+        var values = collectCmsValues();
         api('/api/admin/cms-content', { method: 'PUT', body: { page: 'about', content: { milestones: milestones, values: values } } })
           .then(function () {
             document.getElementById('cms-about-status').textContent = '已保存 ✓';

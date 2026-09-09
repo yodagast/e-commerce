@@ -11,14 +11,14 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
-from sqlalchemy import String, delete, or_, select
+from sqlalchemy import String, delete, func, or_, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.deps import get_current_customer, require_admin
+from app.deps import get_current_customer, get_optional_customer, require_admin
 from app.i18n import get_lang
-from app.models import AdminUser, Customer, SiteBanner, SiteContent, UserStory
+from app.models import AdminUser, Customer, SiteBanner, SiteContent, StoryComment, StoryLike, UserStory
 from app.routers.uploads import ALLOWED_IMAGE_EXT, _safe_ext, _save_upload
 
 router = APIRouter(prefix="/api", tags=["cms"])
@@ -115,7 +115,13 @@ async def get_site_content(
     return await _load_page_content_async(db, page)
 
 
-def _user_story_to_dict(story: UserStory, customer: Customer | None = None) -> dict:
+def _user_story_to_dict(
+    story: UserStory,
+    customer: Customer | None = None,
+    like_count: int = 0,
+    comment_count: int = 0,
+    liked: bool = False,
+) -> dict:
     """序列化用户故事：审核状态由 is_published + reject_reason 推导（approved/pending/rejected）"""
     if story.is_published:
         status = "approved"
@@ -140,6 +146,9 @@ def _user_story_to_dict(story: UserStory, customer: Customer | None = None) -> d
         "status": status,
         "reject_reason": story.reject_reason,
         "created_at": story.created_at.isoformat() if story.created_at else None,
+        "like_count": like_count,
+        "comment_count": comment_count,
+        "liked": liked,
     }
 
 
@@ -188,7 +197,34 @@ async def list_user_stories(
         )
     query = query.order_by(UserStory.created_at.desc(), UserStory.id.desc())
     result = await db.execute(query)
-    stories = [_user_story_to_dict(story, customer) for story, customer in result.all()]
+    rows = result.all()
+
+    story_ids = [s.id for s, _ in rows]
+    like_counts: dict[int, int] = {}
+    comment_counts: dict[int, int] = {}
+    if story_ids:
+        like_rows = (
+            await db.execute(
+                select(StoryLike.user_story_id, func.count()).group_by(StoryLike.user_story_id).where(StoryLike.user_story_id.in_(story_ids))
+            )
+        ).all()
+        like_counts = dict(like_rows)
+        comment_rows = (
+            await db.execute(
+                select(StoryComment.user_story_id, func.count()).group_by(StoryComment.user_story_id).where(StoryComment.user_story_id.in_(story_ids))
+            )
+        ).all()
+        comment_counts = dict(comment_rows)
+
+    stories = [
+        _user_story_to_dict(
+            story, customer,
+            like_count=like_counts.get(story.id, 0),
+            comment_count=comment_counts.get(story.id, 0),
+            liked=False,
+        )
+        for story, customer in rows
+    ]
     # 聚合全部标签（用于前台标签墙），按频率排序
     tag_counts: dict[str, int] = {}
     for s in stories:
@@ -244,6 +280,7 @@ async def list_my_user_stories(
 @router.get("/user-stories/{story_id}")
 async def get_user_story(
     story_id: int,
+    customer: Customer | None = Depends(get_optional_customer),
     db: AsyncSession = Depends(get_db),
 ):
     """前台公开：单条用户故事详情（仅已审核发布，供详情页展示）。"""
@@ -255,8 +292,118 @@ async def get_user_story(
     row = result.first()
     if not row:
         raise HTTPException(status_code=404, detail="用户故事不存在或未发布")
-    story, customer = row
-    return _user_story_to_dict(story, customer)
+    story, author = row
+    like_count = (
+        await db.execute(select(func.count()).select_from(StoryLike).where(StoryLike.user_story_id == story_id))
+    ).scalar() or 0
+    comment_count = (
+        await db.execute(select(func.count()).select_from(StoryComment).where(StoryComment.user_story_id == story_id))
+    ).scalar() or 0
+    liked = False
+    if customer:
+        liked = (
+            await db.execute(
+                select(StoryLike).where(StoryLike.user_story_id == story_id, StoryLike.customer_id == customer.id)
+            )
+        ).first() is not None
+    return _user_story_to_dict(story, author, like_count=like_count, comment_count=comment_count, liked=liked)
+
+
+@router.post("/user-stories/{story_id}/like")
+async def like_user_story(
+    story_id: int,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    """点赞故事（幂等：重复点赞返回当前状态）。"""
+    story = (await db.execute(select(UserStory).where(UserStory.id == story_id))).scalar_one_or_none()
+    if not story or not story.is_published:
+        raise HTTPException(status_code=404, detail="用户故事不存在或未发布")
+    existing = (
+        await db.execute(
+            select(StoryLike).where(StoryLike.user_story_id == story_id, StoryLike.customer_id == customer.id)
+        )
+    ).scalar_one_or_none()
+    if not existing:
+        db.add(StoryLike(user_story_id=story_id, customer_id=customer.id))
+        await db.commit()
+    like_count = (
+        await db.execute(select(func.count()).select_from(StoryLike).where(StoryLike.user_story_id == story_id))
+    ).scalar() or 0
+    return {"liked": True, "like_count": like_count}
+
+
+@router.post("/user-stories/{story_id}/unlike")
+async def unlike_user_story(
+    story_id: int,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    """取消点赞（幂等）。"""
+    await db.execute(
+        delete(StoryLike).where(StoryLike.user_story_id == story_id, StoryLike.customer_id == customer.id)
+    )
+    await db.commit()
+    like_count = (
+        await db.execute(select(func.count()).select_from(StoryLike).where(StoryLike.user_story_id == story_id))
+    ).scalar() or 0
+    return {"liked": False, "like_count": like_count}
+
+
+@router.get("/user-stories/{story_id}/comments")
+async def list_story_comments(
+    story_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """公开：故事评论列表（按时间正序）。"""
+    story = (await db.execute(select(UserStory).where(UserStory.id == story_id))).scalar_one_or_none()
+    if not story or not story.is_published:
+        raise HTTPException(status_code=404, detail="用户故事不存在或未发布")
+    rows = (
+        await db.execute(
+            select(StoryComment, Customer)
+            .join(Customer, Customer.id == StoryComment.customer_id)
+            .where(StoryComment.user_story_id == story_id)
+            .order_by(StoryComment.created_at.asc(), StoryComment.id.asc())
+        )
+    ).all()
+    return [
+        {
+            "id": c.id,
+            "content": c.content,
+            "author": (cu.full_name or cu.email.split("@")[0]) if cu else "用户",
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c, cu in rows
+    ]
+
+
+@router.post("/user-stories/{story_id}/comments")
+async def create_story_comment(
+    story_id: int,
+    payload: dict,
+    customer: Customer = Depends(get_current_customer),
+    db: AsyncSession = Depends(get_db),
+):
+    """评论故事。"""
+    story = (await db.execute(select(UserStory).where(UserStory.id == story_id))).scalar_one_or_none()
+    if not story or not story.is_published:
+        raise HTTPException(status_code=404, detail="用户故事不存在或未发布")
+    content = str(payload.get("content") or "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="评论内容不能为空")
+    if len(content) > 500:
+        raise HTTPException(status_code=400, detail="评论内容不能超过 500 字")
+    comment = StoryComment(user_story_id=story_id, customer_id=customer.id, content=content)
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+    return {
+        "id": comment.id,
+        "content": comment.content,
+        "author": customer.full_name or customer.email.split("@")[0],
+        "created_at": comment.created_at.isoformat() if comment.created_at else None,
+    }
 
 
 @router.put("/user-stories/{story_id}")
@@ -412,6 +559,20 @@ async def admin_list_banners(
         stmt = stmt.where(SiteBanner.placement == placement)
     result = await db.execute(stmt)
     return [_banner_to_dict(b, "zh") for b in result.scalars().all()]
+
+
+@router.get("/admin/banners/{banner_id}")
+async def admin_get_banner(
+    banner_id: int,
+    admin: AdminUser = Depends(require_admin()),
+    db: AsyncSession = Depends(get_db),
+):
+    """管理端读取单条轮播（供独立编辑页回填）。"""
+    result = await db.execute(select(SiteBanner).where(SiteBanner.id == banner_id))
+    banner = result.scalar_one_or_none()
+    if not banner:
+        raise HTTPException(status_code=404, detail="轮播不存在")
+    return _banner_to_dict(banner, "zh")
 
 
 @router.post("/admin/banners", status_code=201)

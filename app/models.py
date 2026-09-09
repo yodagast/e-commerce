@@ -447,6 +447,38 @@ class UserStory(Base):
     )
 
 
+class StoryLike(Base):
+    """用户故事点赞（一个用户对一篇故事只能点一次）"""
+    __tablename__ = "story_likes"
+    __table_args__ = (UniqueConstraint("user_story_id", "customer_id", name="uq_story_like"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_story_id: Mapped[int] = mapped_column(
+        ForeignKey("user_stories.id", ondelete="CASCADE"), index=True
+    )
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey("customers.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class StoryComment(Base):
+    """用户故事评论"""
+    __tablename__ = "story_comments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_story_id: Mapped[int] = mapped_column(
+        ForeignKey("user_stories.id", ondelete="CASCADE"), index=True
+    )
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey("customers.id", ondelete="CASCADE"), index=True
+    )
+    content: Mapped[str] = mapped_column(String(500), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    customer = relationship("Customer")
+
+
 class NewsletterSubscriber(Base):
     """新闻订阅者（首页/页脚「订阅优惠信息」）"""
     __tablename__ = "newsletter_subscribers"

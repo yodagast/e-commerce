@@ -734,6 +734,62 @@ class TestUserStories:
         assert not any(s["id"] == story_id for s in mine)
         assert requests.get(f"{BASE}/api/user-stories/{story_id}").status_code == 404
 
+    def test_like_and_comment_flow(self, buyer_token, admin_token):
+        """点赞/评论完整流程：发表故事 -> 发布 -> 点赞幂等 -> 评论 -> 计数更新 -> 取消点赞。"""
+        created = requests.post(f"{BASE}/api/user-stories", json={
+            "title": "点赞评论测试故事",
+            "content": "等待被点赞和评论。",
+        }, headers=buyer_token)
+        assert created.status_code == 201, created.text
+        story_id = created.json()["id"]
+        requests.put(f"{BASE}/api/admin/user-stories/{story_id}", json={"is_published": True}, headers=admin_token)
+
+        # 未登录不能点赞/评论
+        assert requests.post(f"{BASE}/api/user-stories/{story_id}/like").status_code == 401
+        assert requests.post(f"{BASE}/api/user-stories/{story_id}/comments", json={"content": "x"}).status_code == 401
+
+        # 点赞（幂等）
+        like1 = requests.post(f"{BASE}/api/user-stories/{story_id}/like", headers=buyer_token)
+        assert like1.status_code == 200, like1.text
+        assert like1.json() == {"liked": True, "like_count": 1}
+        like2 = requests.post(f"{BASE}/api/user-stories/{story_id}/like", headers=buyer_token)
+        assert like2.json() == {"liked": True, "like_count": 1}
+
+        # 评论
+        cm = requests.post(f"{BASE}/api/user-stories/{story_id}/comments", json={"content": "很棒！"}, headers=buyer_token)
+        assert cm.status_code == 200, cm.text
+        assert cm.json()["content"] == "很棒！"
+        # 空评论 400
+        assert requests.post(f"{BASE}/api/user-stories/{story_id}/comments", json={"content": "  "}, headers=buyer_token).status_code == 400
+
+        # 评论列表
+        cl = requests.get(f"{BASE}/api/user-stories/{story_id}/comments").json()
+        assert len(cl) == 1 and cl[0]["author"] == "买家"
+
+        # 详情带计数与 liked 状态（带 token 时 liked 应为 True）
+        detail = requests.get(f"{BASE}/api/user-stories/{story_id}").json()
+        assert detail["like_count"] == 1
+        assert detail["comment_count"] == 1
+        # 未登录：liked 恒为 False
+        assert detail["liked"] is False
+        detail_auth = requests.get(f"{BASE}/api/user-stories/{story_id}", headers=buyer_token).json()
+        assert detail_auth["liked"] is True
+
+        # 公开列表带计数
+        pub = requests.get(f"{BASE}/api/user-stories").json()
+        items = pub["items"] if isinstance(pub, dict) else pub
+        pub_story = next(s for s in items if s["id"] == story_id)
+        assert pub_story["like_count"] == 1
+        assert pub_story["comment_count"] == 1
+
+        # 取消点赞
+        ul = requests.post(f"{BASE}/api/user-stories/{story_id}/unlike", headers=buyer_token)
+        assert ul.json() == {"liked": False, "like_count": 0}
+        assert requests.get(f"{BASE}/api/user-stories/{story_id}").json()["liked"] is False
+
+        # 清理
+        requests.delete(f"{BASE}/api/admin/user-stories/{story_id}", headers=admin_token)
+
 
 # ---------- 订单与支付接口 ----------
 class TestOrders:
@@ -1103,3 +1159,62 @@ class TestAdmin:
         for a in admins:
             if a["username"] == uname:
                 requests.delete(f"{BASE}/api/admin/admins/{a['id']}", headers=admin_token)
+
+
+class TestBanner:
+    """首页轮播（home_hero）管理：独立编辑页依赖的 CRUD 与单条接口。"""
+
+    def test_banner_crud_and_get_one(self, admin_token):
+        # 创建
+        payload = {
+            "placement": "home_hero",
+            "title_i18n": {"zh": "测试轮播", "en": "Test Banner"},
+            "subtitle_i18n": {"zh": "副标题", "en": "Sub"},
+            "button_text_i18n": {"zh": "去看看", "en": "Explore"},
+            "image_url": "/static/uploads/test.png",
+            "video_url": None,
+            "link_url": "/products.html",
+            "sort_order": 99,
+            "is_active": True,
+        }
+        r = requests.post(f"{BASE}/api/admin/banners", json=payload, headers=admin_token)
+        assert r.status_code == 201, r.text
+        banner = r.json()
+        bid = banner["id"]
+
+        # 单条详情接口（独立编辑页回填用）
+        one = requests.get(f"{BASE}/api/admin/banners/{bid}", headers=admin_token)
+        assert one.status_code == 200, one.text
+        assert one.json()["id"] == bid
+        assert one.json()["title_i18n"]["zh"] == "测试轮播"
+        assert one.json()["link_url"] == "/products.html"
+        assert one.json()["button_text_i18n"]["en"] == "Explore"
+
+        # 列表包含
+        lst = requests.get(f"{BASE}/api/admin/banners?placement=home_hero", headers=admin_token).json()
+        assert any(b["id"] == bid for b in lst)
+
+        # 未登录访问单条 401
+        assert requests.get(f"{BASE}/api/admin/banners/{bid}").status_code == 401
+
+        # 更新
+        upd = requests.put(f"{BASE}/api/admin/banners/{bid}", json={
+            "title_i18n": {"zh": "测试轮播改", "en": "Updated"},
+            "is_active": False,
+        }, headers=admin_token)
+        assert upd.status_code == 200, upd.text
+        assert upd.json()["title_i18n"]["zh"] == "测试轮播改"
+        assert upd.json()["is_active"] is False
+
+        # 公开接口不返回停用轮播
+        pub = requests.get(f"{BASE}/api/banners?placement=home_hero").json()
+        assert not any(b["id"] == bid for b in pub)
+
+        # 单条不存在 404
+        assert requests.get(f"{BASE}/api/admin/banners/999999999", headers=admin_token).status_code == 404
+
+        # 删除
+        d = requests.delete(f"{BASE}/api/admin/banners/{bid}", headers=admin_token)
+        assert d.status_code == 200, d.text
+        # 删除后单条 404
+        assert requests.get(f"{BASE}/api/admin/banners/{bid}", headers=admin_token).status_code == 404

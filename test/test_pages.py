@@ -85,6 +85,14 @@ PAGE_ASSERTS = {
         "'/api/user-stories/'",  # 详情接口
         "sd-card",               # 详情卡片
     ],
+    "admin-banner-edit.html": [
+        "轮播图编辑",             # 页面标题
+        "首页 Hero 预览",        # 实时预览
+        "title_i18n",            # 多语文案
+        "'/api/admin/banners/'", # 单条 fetch
+        "params.get('new')",     # 新增模式
+        "uploadImageFile",       # 图片上传
+    ],
     "account.html": [
         "mountPyMall",
         "我的故事",               # 我的故事 tab
