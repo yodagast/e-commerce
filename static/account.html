@@ -85,7 +85,7 @@
               <base-icon name="chevronRight" :size="15" class="acct2-arrow"></base-icon>
             </a>
             <a class="acct2-menu" :class="{active: tab==='stories'}" @click="tab='stories'">
-              <base-icon name="review" :size="20"></base-icon><span>我的故事</span>
+              <base-icon name="review" :size="20"></base-icon><span>{{ t('my_stories') }}</span>
               <base-icon name="chevronRight" :size="15" class="acct2-arrow"></base-icon>
             </a>
           </aside>
@@ -236,35 +236,35 @@
             <!-- 我的故事（投稿管理 + 内容编辑 + 图片上传） -->
             <div v-if="tab==='stories'">
               <div class="acct2-panel-head">
-                <h2>我的故事</h2>
-                <button v-if="!storyForm.open" class="btn btn-primary btn-sm" @click="openStoryForm()"><base-icon name="plus" :size="15"></base-icon> 发布新故事</button>
+                <h2>{{ t('my_stories') }}</h2>
+                <button v-if="!storyForm.open" class="btn btn-primary btn-sm" @click="openStoryForm()"><base-icon name="plus" :size="15"></base-icon> {{ t('publish_story') }}</button>
               </div>
 
               <!-- 发布/编辑表单 -->
               <div v-if="storyForm.open" class="acct2-story-form card" style="margin-bottom:20px;padding:18px">
                 <div class="form-group">
-                  <label>标题</label>
-                  <input v-model="storyForm.title" placeholder="分享标题">
+                  <label>{{ t('story_title_label') }}</label>
+                  <input v-model="storyForm.title" :placeholder="t('story_title_ph')">
                 </div>
                 <div class="form-group" style="margin-top:12px">
-                  <label>标签（逗号/顿号分隔，最多 6 个）</label>
-                  <input v-model="storyForm.tagsText" placeholder="例如：晨练, 冥想, 露营">
+                  <label>{{ t('story_tags_label') }}</label>
+                  <input v-model="storyForm.tagsText" :placeholder="t('story_tags_ph')">
                 </div>
                 <div class="form-group" style="margin-top:12px">
-                  <label>内容</label>
-                  <textarea v-model="storyForm.content" rows="4" placeholder="写下你的 YOYOLE 瑜伽、户外或生活故事"></textarea>
+                  <label>{{ t('story_content_label') }}</label>
+                  <textarea v-model="storyForm.content" rows="4" :placeholder="t('story_content_ph')"></textarea>
                 </div>
                 <div class="form-group" style="margin-top:12px">
-                  <label>配图（可选）</label>
+                  <label>{{ t('story_image_label') }}</label>
                   <input class="story-file" type="file" accept="image/*" @change="uploadStoryImage" ref="storyFileInput">
                   <div v-if="storyForm.image" class="share-img-preview">
-                    <img :src="storyForm.image" alt="预览">
+                    <img :src="storyForm.image" :alt="t('my_stories')">
                     <button type="button" class="share-img-remove" @click="removeStoryImage">×</button>
                   </div>
                 </div>
                 <div class="acct2-story-actions" style="margin-top:14px">
-                  <button class="btn btn-primary" @click="saveStory"><base-icon name="save" :size="15"></base-icon> {{ storyForm.id ? '保存修改' : '提交分享' }}</button>
-                  <button v-if="storyForm.id" class="btn btn-outline" @click="cancelStoryForm">取消编辑</button>
+                  <button class="btn btn-primary" @click="saveStory"><base-icon name="save" :size="15"></base-icon> {{ storyForm.id ? t('save_edit') : t('submit_story') }}</button>
+                  <button v-if="storyForm.id" class="btn btn-outline" @click="cancelStoryForm">{{ t('cancel_edit') }}</button>
                   <span v-if="storyForm.msg" style="margin-left:10px;color:var(--jjs-gray, #64748b);font-size:13px">{{ storyForm.msg }}</span>
                 </div>
               </div>
@@ -272,7 +272,7 @@
               <!-- 投稿列表 -->
               <div class="acct2-empty" v-if="!stories.length && !storyForm.open">
                 <base-icon name="review" :size="44" style="color:#cbd5e1"></base-icon>
-                <div style="margin-top:8px">还没有投稿，点击「发布新故事」分享你的第一个故事吧。</div>
+                <div style="margin-top:8px">{{ t('story_empty_list') }}</div>
               </div>
               <div v-else class="acct2-story-list">
                 <div class="acct2-story-item" v-for="s in stories" :key="s.id">
@@ -280,13 +280,13 @@
                     <div class="acct2-story-top">
                       <a class="acct2-story-title" :href="'/story-detail.html?id=' + s.id" @click.stop v-if="s.status==='approved'">{{ s.title }}</a>
                       <span v-else class="acct2-story-title">{{ s.title }}</span>
-                      <span class="my-story-status" :class="s.status">{{ s.status==='approved' ? '已发布' : (s.status==='rejected' ? '已驳回' : '待审核') }}</span>
+                      <span class="my-story-status" :class="s.status">{{ s.status==='approved' ? t('status_approved') : (s.status==='rejected' ? t('status_rejected') : t('status_pending')) }}</span>
                     </div>
                     <div class="acct2-story-tags">
                       <span v-for="tg in (s.tags || [])" :key="tg" class="story-tag-chip">{{ tg }}</span>
                     </div>
                     <div class="acct2-story-preview" v-if="s.content">{{ s.content.slice(0, 80) }}{{ s.content.length > 80 ? '…' : '' }}</div>
-                    <div v-if="s.status==='rejected' && s.reject_reason" class="my-story-reason">驳回理由：{{ s.reject_reason }}</div>
+                    <div v-if="s.status==='rejected' && s.reject_reason" class="my-story-reason">{{ t('reject_reason_label') }}{{ s.reject_reason }}</div>
                   </div>
                   <div class="acct2-story-ops">
                     <button class="acct2-op" @click="openStoryForm(s)"><base-icon name="pencil" :size="14"></base-icon>{{ t('edit') }}</button>
@@ -320,7 +320,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=20"></script>
+  <script src="/static/js/pymall.js?v=24"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -434,7 +434,7 @@
               state.storyForm.tagsText = (s.tags || []).join(', ');
               state.storyForm.content = s.content || '';
               state.storyForm.image = s.image_url || '';
-              state.storyForm.msg = '正在编辑，保存后需重新审核';
+              state.storyForm.msg = t('story_editing_tip');
             } else {
               state.storyForm.id = null;
               state.storyForm.title = '';
@@ -460,9 +460,9 @@
             var form = new FormData();
             form.append('file', file);
             fetch('/api/user-story-upload', { method: 'POST', headers: { Authorization: 'Bearer ' + PyMall.getToken() }, body: form })
-              .then(function (res) { return res.json().then(function (data) { if (!res.ok) throw new Error(data.detail || '图片上传失败'); return data; }); })
-              .then(function (data) { state.storyForm.image = data.url; state.storyForm.msg = '图片已上传'; })
-              .catch(function (e) { state.storyForm.msg = e.message || '图片上传失败'; });
+              .then(function (res) { return res.json().then(function (data) { if (!res.ok) throw new Error(data.detail || t('story_upload_fail')); return data; }); })
+              .then(function (data) { state.storyForm.image = data.url; state.storyForm.msg = t('image_uploaded'); })
+              .catch(function (e) { state.storyForm.msg = e.message || t('story_upload_fail'); });
           }
           function removeStoryImage() {
             state.storyForm.image = '';
@@ -471,7 +471,7 @@
           function saveStory() {
             var f = state.storyForm;
             if (!f.title.trim() || !f.content.trim()) {
-              state.storyForm.msg = '请填写标题和分享内容';
+              state.storyForm.msg = t('story_fill_required');
               return;
             }
             var tags = String(f.tagsText || '').split(/[,，、]/).map(function (x) { return x.trim(); }).filter(function (x) { return x; }).slice(0, 6);
@@ -485,9 +485,9 @@
             }).then(function () {
               var wasEdit = !!f.id;
               cancelStoryForm();
-              PyMall.toast(wasEdit ? '已保存，修改后需重新审核' : '已提交，等待审核后展示', 'success');
+              PyMall.toast(wasEdit ? t('story_saved_edit') : t('story_submitted'), 'success');
               loadStories();
-            }).catch(function (e) { state.storyForm.msg = e.message || '提交失败'; });
+            }).catch(function (e) { state.storyForm.msg = e.message || t('story_submit_fail'); });
           }
           function delStory(s) {
             if (!confirm(t('confirm_delete'))) return;

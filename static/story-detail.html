@@ -64,15 +64,15 @@
         <!-- 未找到/失败 -->
         <div class="empty" v-else-if="notFound" style="padding-top:40px">
           <base-icon name="review" :size="52" style="color:#cbd5e1"></base-icon>
-          <div style="margin-top:12px">用户故事不存在或未发布</div>
-          <button class="btn btn-primary" style="margin-top:18px" @click="goStories">返回用户故事</button>
+          <div style="margin-top:12px">{{ t('story_not_found') }}</div>
+          <button class="btn btn-primary" style="margin-top:18px" @click="goStories">{{ t('back_to_stories') }}</button>
         </div>
 
         <!-- 详情主体 -->
         <div v-else-if="story">
-          <a class="sd-back" href="/about.html#user-stories">
+          <a class="sd-back" href="/stories.html">
             <base-icon name="chevronRight" :size="16" style="transform:rotate(180deg)"></base-icon>
-            返回用户故事
+            {{ t('back_to_stories') }}
           </a>
           <article class="sd-card">
             <div class="sd-img" v-if="story.image_url && !imgError">
@@ -98,14 +98,14 @@
               <button class="sd-like-btn" :class="{liked: story.liked}" @click="toggleLike">
                 <svg viewBox="0 0 24 24" width="16" height="16" :fill="story.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="sd-like-count">{{ story.like_count || 0 }}</span>
-                <span>{{ story.liked ? '已赞' : '点赞' }}</span>
+                <span>{{ story.liked ? t('liked') : t('like') }}</span>
               </button>
-              <span class="sd-like-hint">共 {{ story.comment_count || 0 }} 条评论</span>
+              <span class="sd-like-hint">{{ tt('comments_count', story.comment_count || 0) }}</span>
             </div>
             <!-- 评论区 -->
             <div class="sd-comments">
-              <div class="sd-comments-title">评论<span>{{ comments.length }}</span></div>
-              <div class="sd-comment-empty" v-if="!comments.length">还没有评论，来抢沙发～</div>
+              <div class="sd-comments-title">{{ t('comments') }}<span>{{ comments.length }}</span></div>
+              <div class="sd-comment-empty" v-if="!comments.length">{{ t('no_comments') }}</div>
               <div class="sd-comment-item" v-for="c in comments" :key="c.id">
                 <span class="sd-comment-avatar">{{ (c.author || 'U').charAt(0).toUpperCase() }}</span>
                 <div class="sd-comment-body">
@@ -117,8 +117,8 @@
                 </div>
               </div>
               <div class="sd-comment-form">
-                <input v-model="commentText" @keyup.enter="submitComment" placeholder="说点什么…（登录后发表）">
-                <button class="btn btn-primary" @click="submitComment">发表</button>
+                <input v-model="commentText" @keyup.enter="submitComment" :placeholder="t('comment_placeholder')">
+                <button class="btn btn-primary" @click="submitComment">{{ t('comment_submit') }}</button>
               </div>
               <div v-if="commentMsg" class="sd-new-comment" style="margin-top:8px">{{ commentMsg }}</div>
             </div>
@@ -132,12 +132,16 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=20"></script>
+  <script src="/static/js/pymall.js?v=24"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
       var Vue = PyMall.Vue;
       var t = PyMall.t;
+      var tt = PyMall.tt;
+
+      // 跟随语言设置页面标题
+      document.title = t('story_detail_title') + ' - YOYOLE';
 
       window.mountPyMall({
         setup() {
@@ -210,21 +214,22 @@
             PyMall.api('/api/user-stories/' + id + '/comments', { method: 'POST', token: PyMall.getToken(), body: { content: text } })
               .then(function () {
                 state.commentText = '';
-                state.commentMsg = '评论已发表';
+                state.commentMsg = t('comment_posted');
                 loadComments(id);
                 // 刷新详情里的评论数
                 PyMall.api('/api/user-stories/' + id).then(function (d) {
                   if (d) { state.story.comment_count = d.comment_count; }
                 }).catch(function () {});
               })
-              .catch(function (e) { state.commentMsg = e.message || '评论失败'; });
+              .catch(function (e) { state.commentMsg = e.message || t('comment_failed'); });
           }
 
-          function goStories() { location.href = '/about.html#user-stories'; }
+          function goStories() { location.href = '/stories.html'; }
           load();
 
           return {
             t: t,
+            tt: tt,
             story: Vue.computed(function () { return state.story; }),
             comments: Vue.computed(function () { return state.comments; }),
             commentText: Vue.computed({ get: function () { return state.commentText; }, set: function (v) { state.commentText = v; } }),

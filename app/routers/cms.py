@@ -43,6 +43,7 @@ DEFAULT_CMS_CONTENT = {
         },
     },
     "about": {
+        "hero_tag": {"zh": "ABOUT YOYOLE", "en": "ABOUT YOYOLE"},
         "hero_title": {"zh": "YOYOLE，让身体回到自然", "en": "YOYOLE brings the body back to nature"},
         "hero_subtitle": {"zh": "从瑜伽练习到山野远行，用认真设计的装备支持每一次自在出发。", "en": "Thoughtful gear for yoga practice, outdoor adventures, and a life in motion."},
         "story_title": {"zh": "我们的故事", "en": "Our Story"},
@@ -50,11 +51,10 @@ DEFAULT_CMS_CONTENT = {
             "zh": "YOYOLE 创立于 2020 年，从一群热爱瑜伽与户外生活的人开始。我们相信好的装备不应限制身体，而应让人与自然连接得更深。",
             "en": "Founded in 2020 by people who love yoga and the outdoors, YOYOLE believes good gear should free the body and deepen our connection with nature.",
         },
-        "mission_title": {"zh": "我们的使命", "en": "Our Mission"},
-        "mission_content": {
-            "zh": "让每个人都能用舒适、耐用的装备亲近身体，亲近自然。",
-            "en": "Help everyone get closer to their body and nature with comfortable, durable gear.",
-        },
+        "milestones_kicker": {"zh": "MILESTONES", "en": "MILESTONES"},
+        "milestones_title": {"zh": "成长历程", "en": "Milestones"},
+        "values_kicker": {"zh": "VALUES", "en": "VALUES"},
+        "values_title": {"zh": "我们的价值观", "en": "Our Values"},
         "milestones": [
             {"time": {"zh": "2020", "en": "2020"}, "title": {"zh": "品牌创立", "en": "Brand Founded"}, "desc": {"zh": "从热爱潮流文化的小团队起步。", "en": "Started with a small team passionate about trend culture."}},
             {"time": {"zh": "2021", "en": "2021"}, "title": {"zh": "首次亮相", "en": "First Launch"}, "desc": {"zh": "用原创设计连接更多年轻用户。", "en": "Connected with more young users through original design."}},

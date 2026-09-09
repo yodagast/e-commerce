@@ -67,10 +67,16 @@ PAGE_ASSERTS = {
     "about.html": [
         "mountPyMall",
         "story-section",           # 品牌故事区块
-        "discover-section",        # Discover 三板块
         "milestones",              # 成长历程
         "site-footer",             # 页脚（含统一邮箱订阅入口）
         "about-hero",              # Hero 区域
+    ],
+    "stories.html": [
+        "mountPyMall",
+        "id=\"user-stories\"",     # 用户故事区块
+        "discover-grid",           # 故事卡片网格
+        "'/api/user-stories'",     # 公开故事接口
+        "activeTag",               # 标签筛选
     ],
     "wishlist.html": [
         "mountPyMall",
@@ -141,13 +147,14 @@ def test_index_has_hidden_admin_nav():
 
 
 def test_nav_has_about_link():
-    """主导航（pymall.js MainNav）应包含品牌故事（about）入口"""
+    """主导航（pymall.js MainNav）应包含品牌故事（about）入口和用户故事（stories）入口"""
     r = requests.get(f"{BASE}/static/js/pymall.js")
     assert r.status_code == 200
     assert 'href="/about.html"' in r.text
+    assert 'href="/stories.html"' in r.text
 
 
-@pytest.mark.parametrize("page", ["index.html", "products.html", "cart.html", "orders.html", "about.html", "wishlist.html", "story-detail.html", "account.html"])
+@pytest.mark.parametrize("page", ["index.html", "products.html", "cart.html", "orders.html", "about.html", "stories.html", "wishlist.html", "story-detail.html", "account.html"])
 def test_common_components_present(page):
     """所有前端页面都应引用 pymall.js（含共享组件）"""
     r = requests.get(f"{BASE}/{page}")

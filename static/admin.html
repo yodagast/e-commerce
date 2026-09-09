@@ -183,6 +183,30 @@
             <label>正文（英文）</label>
             <textarea id="cms-story-content-en" rows="4" placeholder="Brand story content..." style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:100%;resize:vertical"></textarea>
           </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0">
+            <h3 style="margin-bottom:6px;font-size:14px;color:#475569">页面 Hero 区（顶部大标题，前台 about 页顶部展示）</h3>
+            <div class="form-group" style="margin-top:10px">
+              <label>Hero 标签（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-hero-tag-zh" placeholder="如 ABOUT YOYOLE" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-hero-tag-en" placeholder="About us" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>Hero 主标题（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-hero-title-zh" placeholder="如 YOYOLE，让身体回到自然" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-hero-title-en" placeholder="YOYOLE brings the body back to nature" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>Hero 副标题（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <textarea id="cms-hero-sub-zh" rows="2" placeholder="从瑜伽练习到山野远行…" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%;resize:vertical"></textarea>
+                <textarea id="cms-hero-sub-en" rows="2" placeholder="Thoughtful gear for yoga practice…" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%;resize:vertical"></textarea>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label>品牌故事配图</label>
             <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -206,6 +230,37 @@
         <div class="card" style="padding:20px;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px">
           <h3 style="margin-bottom:8px">成长经历与品牌价值观</h3>
           <p style="font-size:13px;color:#64748b;margin-bottom:14px">以表格形式维护成长历程时间线与品牌价值观，中英文分别填写，保存后前台「关于我们」页实时生效。</p>
+          <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #e2e8f0">
+            <h3 style="margin-bottom:6px;font-size:14px;color:#475569">区块标题（前台「成长历程」与「我们的价值观」的标题文字）</h3>
+            <div class="form-group" style="margin-top:10px">
+              <label>成长历程 Kicker（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-milestones-kicker-zh" placeholder="如 MILESTONES" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-milestones-kicker-en" placeholder="MILESTONES" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>成长历程标题（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-milestones-title-zh" placeholder="成长历程" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-milestones-title-en" placeholder="Milestones" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>价值观 Kicker（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-values-kicker-zh" placeholder="如 VALUES" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-values-kicker-en" placeholder="VALUES" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>价值观标题（中文 / 英文）</label>
+              <div style="display:flex;gap:10px">
+                <input type="text" id="cms-values-title-zh" placeholder="我们的价值观" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+                <input type="text" id="cms-values-title-en" placeholder="Our Values" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:50%">
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label style="font-weight:700">成长经历（时间线）</label>
             <table class="admin-table" style="margin-top:8px">
@@ -812,6 +867,22 @@
             document.getElementById('cms-story-title-en').value = (d.story_title && d.story_title.en) || '';
             document.getElementById('cms-story-content-zh').value = (d.story_content && d.story_content.zh) || '';
             document.getElementById('cms-story-content-en').value = (d.story_content && d.story_content.en) || '';
+            // Hero 区
+            document.getElementById('cms-hero-tag-zh').value = (d.hero_tag && d.hero_tag.zh) || '';
+            document.getElementById('cms-hero-tag-en').value = (d.hero_tag && d.hero_tag.en) || '';
+            document.getElementById('cms-hero-title-zh').value = (d.hero_title && d.hero_title.zh) || '';
+            document.getElementById('cms-hero-title-en').value = (d.hero_title && d.hero_title.en) || '';
+            document.getElementById('cms-hero-sub-zh').value = (d.hero_subtitle && d.hero_subtitle.zh) || '';
+            document.getElementById('cms-hero-sub-en').value = (d.hero_subtitle && d.hero_subtitle.en) || '';
+            // 成长历程/价值观区块标题
+            document.getElementById('cms-milestones-kicker-zh').value = (d.milestones_kicker && d.milestones_kicker.zh) || 'MILESTONES';
+            document.getElementById('cms-milestones-kicker-en').value = (d.milestones_kicker && d.milestones_kicker.en) || 'MILESTONES';
+            document.getElementById('cms-milestones-title-zh').value = (d.milestones_title && d.milestones_title.zh) || '成长历程';
+            document.getElementById('cms-milestones-title-en').value = (d.milestones_title && d.milestones_title.en) || 'Milestones';
+            document.getElementById('cms-values-kicker-zh').value = (d.values_kicker && d.values_kicker.zh) || 'VALUES';
+            document.getElementById('cms-values-kicker-en').value = (d.values_kicker && d.values_kicker.en) || 'VALUES';
+            document.getElementById('cms-values-title-zh').value = (d.values_title && d.values_title.zh) || '我们的价值观';
+            document.getElementById('cms-values-title-en').value = (d.values_title && d.values_title.en) || 'Our Values';
             var img = story.image || '';
             renderCmsStoryImage(img);
             renderCmsTables(d.milestones, d.values);
@@ -1009,15 +1080,28 @@
         var titleEn = document.getElementById('cms-story-title-en').value.trim();
         var contentZh = document.getElementById('cms-story-content-zh').value.trim();
         var contentEn = document.getElementById('cms-story-content-en').value.trim();
+        // Hero 区
+        var heroTagZh = document.getElementById('cms-hero-tag-zh').value.trim();
+        var heroTagEn = document.getElementById('cms-hero-tag-en').value.trim();
+        var heroTitleZh = document.getElementById('cms-hero-title-zh').value.trim();
+        var heroTitleEn = document.getElementById('cms-hero-title-en').value.trim();
+        var heroSubZh = document.getElementById('cms-hero-sub-zh').value.trim();
+        var heroSubEn = document.getElementById('cms-hero-sub-en').value.trim();
+        // 仅发送非空字段组（避免空字符串覆盖默认文案）；组内单语言留空时以另一语言兜底
+        var content = { story: { image: cmsStoryImage } };
+        function pair(a, b, fa, fb) {
+          if (a || b) content[fa] = { zh: a, en: b };
+        }
+        pair(titleZh, titleEn, 'story_title');
+        pair(contentZh, contentEn, 'story_content');
+        pair(heroTagZh, heroTagEn, 'hero_tag');
+        pair(heroTitleZh, heroTitleEn, 'hero_title');
+        pair(heroSubZh, heroSubEn, 'hero_subtitle');
         api('/api/admin/cms-content', {
           method: 'PUT',
           body: {
             page: 'about',
-            content: {
-              story_title: { zh: titleZh, en: titleEn },
-              story_content: { zh: contentZh, en: contentEn },
-              story: { image: cmsStoryImage },
-            },
+            content: content,
           },
         }).then(function () {
           document.getElementById('cms-story-status').textContent = '已保存 ✓（前台 about 页实时生效）';
@@ -1028,7 +1112,21 @@
       document.getElementById('cms-about-save').onclick = function () {
         var milestones = collectCmsMilestones();
         var values = collectCmsValues();
-        api('/api/admin/cms-content', { method: 'PUT', body: { page: 'about', content: { milestones: milestones, values: values } } })
+        // 区块标题（成长历程/价值观 kicker + title），仅非空组发送
+        var content = { milestones: milestones, values: values };
+        var msKickerZh = document.getElementById('cms-milestones-kicker-zh').value.trim();
+        var msKickerEn = document.getElementById('cms-milestones-kicker-en').value.trim();
+        var msTitleZh = document.getElementById('cms-milestones-title-zh').value.trim();
+        var msTitleEn = document.getElementById('cms-milestones-title-en').value.trim();
+        var vKickerZh = document.getElementById('cms-values-kicker-zh').value.trim();
+        var vKickerEn = document.getElementById('cms-values-kicker-en').value.trim();
+        var vTitleZh = document.getElementById('cms-values-title-zh').value.trim();
+        var vTitleEn = document.getElementById('cms-values-title-en').value.trim();
+        if (msKickerZh || msKickerEn) content.milestones_kicker = { zh: msKickerZh, en: msKickerEn };
+        if (msTitleZh || msTitleEn) content.milestones_title = { zh: msTitleZh, en: msTitleEn };
+        if (vKickerZh || vKickerEn) content.values_kicker = { zh: vKickerZh, en: vKickerEn };
+        if (vTitleZh || vTitleEn) content.values_title = { zh: vTitleZh, en: vTitleEn };
+        api('/api/admin/cms-content', { method: 'PUT', body: { page: 'about', content: content } })
           .then(function () {
             document.getElementById('cms-about-status').textContent = '已保存 ✓';
             App.toast('成长经历与价值观已保存', 'success');

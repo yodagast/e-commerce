@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="/static/css/jjshouse.css">
   <style>
     /* ---------- About Us 品牌故事页样式 ---------- */
+    /* 标题字体：无衬线为主，融入一丝衬线衬出品牌人文感（Patagonia/Arc'teryx 风格） */
+    .about-hero h1,
+    .story-grid h2,
+    .milestones-header h2,
+    .values-header h2 {
+      font-family: var(--font);
+      font-feature-settings: "kern" 1;
+      text-rendering: optimizeLegibility;
+    }
     .about-hero {
       position: relative;
       background: linear-gradient(135deg, var(--jjs-primary) 0%, #8e1240 100%);
@@ -31,34 +40,37 @@
     }
     .about-hero .hero-tag {
       display: inline-block;
-      letter-spacing: 4px;
-      font-size: 13px;
+      letter-spacing: 5px;
+      font-size: 14px;
       font-weight: 600;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.32);
       border-radius: 999px;
-      padding: 6px 18px;
-      margin-bottom: 26px;
+      padding: 7px 22px;
+      margin-bottom: 30px;
       text-transform: uppercase;
+      text-indent: 5px;
     }
     .about-hero h1 {
-      font-size: clamp(28px, 4.5vw, 48px);
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 18px;
-      letter-spacing: 1px;
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.18);
     }
     .about-hero p.sub {
-      font-size: clamp(14px, 1.6vw, 17px);
-      line-height: 1.9;
-      opacity: 0.92;
-      max-width: 640px;
+      font-size: clamp(15px, 1.7vw, 18px);
+      line-height: 2;
+      opacity: 0.94;
+      font-weight: 300;
+      max-width: 660px;
       margin: 0 auto;
     }
 
     /* 品牌故事 */
     .story-section {
-      padding: 72px 0 56px;
+      padding: 76px 0 60px;
     }
     .story-grid {
       display: grid;
@@ -68,22 +80,28 @@
     }
     .story-grid .kicker {
       color: var(--jjs-primary);
-      letter-spacing: 3px;
-      font-size: 12px;
+      letter-spacing: 5px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      text-indent: 5px;
     }
     .story-grid h2 {
-      font-size: 30px;
-      font-weight: 800;
-      margin-bottom: 20px;
+      font-size: clamp(26px, 3vw, 34px);
+      font-weight: 700;
       letter-spacing: 1px;
+      line-height: 1.4;
+      margin-bottom: 22px;
     }
     .story-grid .story-p {
-      color: var(--jjs-gray);
-      line-height: 2;
-      margin-bottom: 16px;
-      font-size: 15px;
+      color: #3f3f3f;
+      line-height: 2.1;
+      margin-bottom: 18px;
+      font-size: 15.5px;
+      font-weight: 400;
+    }
+    .story-grid .story-p:last-child {
+      margin-bottom: 0;
     }
     .story-visual {
       border-radius: var(--radius-lg);
@@ -104,429 +122,33 @@
       color: var(--jjs-primary);
       font-weight: 700;
       font-size: 12px;
-      letter-spacing: 2px;
-      border-radius: 999px;
-      padding: 6px 14px;
-    }
-
-    /* 使命 */
-    .mission-band {
-      background: var(--jjs-bg-light);
-      padding: 64px 0;
-    }
-    .mission-inner {
-      max-width: 820px;
-      margin: 0 auto;
-      text-align: center;
-    }
-    .mission-inner .kicker {
-      color: var(--jjs-primary);
       letter-spacing: 3px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .mission-inner h2 {
-      font-size: 30px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-    .mission-inner .mission-desc {
-      color: var(--jjs-gray);
-      font-size: 15px;
-      line-height: 2;
-      margin-bottom: 30px;
-    }
-    .mission-points {
-      display: flex;
-      justify-content: center;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-    .mission-point {
-      background: #fff;
-      border: 1px solid var(--jjs-border);
-      border-radius: var(--radius-md);
-      padding: 16px 26px;
-      font-weight: 700;
-      font-size: 14px;
-      box-shadow: var(--shadow-sm);
-    }
-    .mission-point .mp-ic {
-      margin-right: 8px;
-    }
-
-    /* 探索板块（仿 POP MART Discover） */
-    .discover-section {
-      padding: 72px 0 56px;
-    }
-    .discover-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .discover-header .kicker {
-      color: var(--jjs-primary);
-      letter-spacing: 3px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-    .discover-header h2 {
-      font-size: 30px;
-      font-weight: 800;
-    }
-    .discover-header .discover-desc {
-      color: var(--jjs-gray);
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    /* 标签墙 Tab（按用户标签聚合筛选） */
-    .discover-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .discover-tabs button {
-      border: 1px solid var(--jjs-border);
-      background: #fff;
-      color: var(--jjs-gray);
       border-radius: 999px;
-      padding: 8px 22px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      padding: 7px 16px;
     }
-    .discover-tabs button:hover { border-color: var(--jjs-primary); color: var(--jjs-primary); }
-    .discover-tabs button.active {
-      background: var(--jjs-primary);
-      border-color: var(--jjs-primary);
-      color: #fff;
-    }
-    /* 标签筛选提示行 */
-    .discover-tab-hint {
-      text-align: center;
-      color: var(--jjs-gray);
-      font-size: 12.5px;
-      margin-bottom: 26px;
-    }
-    /* 双列卡片网格（故事展示） */
-    .discover-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 26px;
-    }
-    .discover-card {
-      border: 1px solid var(--jjs-border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      background: #fff;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      text-decoration: none;
-      color: inherit;
-    }
-    .discover-card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-lg);
-      text-decoration: none;
-    }
-    .discover-card .dc-img {
-      width: 100%;
-      overflow: hidden;
-      max-height: 340px;
-      flex-shrink: 0;
-    }
-    .discover-card .dc-img img {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: cover;
-      transition: transform 0.5s ease;
-    }
-    .discover-card:hover .dc-img img {
-      transform: scale(1.06);
-    }
-    .discover-card .dc-img-placeholder {
-      height: 170px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--jjs-bg-light, #f7f7f7);
-      color: #cbd5e1;
-    }
-    .discover-card .dc-body {
-      padding: 22px 22px 20px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-    .discover-card .dc-title {
-      font-weight: 800;
-      font-size: 17px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .discover-card .dc-time {
-      color: #a0aec0;
-      font-size: 12px;
-      margin: -2px 0 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .discover-card .dc-desc {
-      color: var(--jjs-gray);
-      font-size: 13.5px;
-      line-height: 1.8;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      flex: 1;
-    }
-    .discover-card .dc-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid var(--jjs-border);
-    }
-    .discover-card .dc-meta-left {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-    /* 卡片点赞 / 评论计数 */
-    .discover-card .dc-stats {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--jjs-gray, #64748b);
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .discover-card .dc-stat {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .discover-card .dc-stat svg { display: block; }
-    .discover-card .dc-stat.liked { color: var(--jjs-primary, #d81e53); }
-    .discover-card .dc-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      max-width: 60%;
-    }
-    .discover-card .dc-tag {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--jjs-primary);
-      background: rgba(216, 30, 83, 0.08);
-      border-radius: 999px;
-      padding: 3px 10px;
-      white-space: nowrap;
-    }
-    .discover-card .dc-author {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      color: var(--jjs-gray);
-      font-size: 12.5px;
-      font-weight: 600;
-    }
-    .discover-card .dc-avatar {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #f06b8a, var(--jjs-primary));
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    /* 标签 chips（个人故事/卡片标签） */
-    .story-card-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-    .story-tag-chip {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--jjs-primary);
-      background: rgba(216, 30, 83, 0.08);
-      border-radius: 999px;
-      padding: 2px 10px;
-    }
-    .discover-empty {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: var(--jjs-gray);
-      padding: 40px 0;
-      background: #fafafa;
-      border-radius: var(--radius-lg);
-      border: 1px dashed var(--jjs-border);
-    }
-    .story-share {
-      max-width: 760px;
-      margin: 0 auto 34px;
-      padding: 20px;
-      border: 1px solid var(--jjs-border);
-      border-radius: var(--radius-md);
-      background: var(--jjs-bg-light);
-    }
-    .story-share input, .story-share textarea {
-      width: 100%;
-      border: 1px solid var(--jjs-border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-      box-sizing: border-box;
-      font: inherit;
-    }
-    .story-share .story-file {
-      margin: 2px 0 12px;
-      font-size: 13px;
-    }
-    /* 分享标签选择（用户自定义标签 + 已有标签快捷选择） */
-    .share-cats {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 0 0 10px;
-    }
-    .share-cats label {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      border: 1px solid var(--jjs-border);
-      background: #fff;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 13px;
-      color: var(--jjs-gray);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .share-cats label.active {
-      border-color: var(--jjs-primary);
-      background: rgba(216, 30, 83, 0.06);
-      color: var(--jjs-primary);
-      font-weight: 600;
-    }
-    .share-cats input { display: none; }
-    .share-cats label .cnt { font-size: 11px; color: #a0aec0; }
-    /* 自定义标签输入 */
-    .share-tag-input-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin: 0 0 10px;
-    }
-    .share-tag-input-row input {
-      flex: 1;
-      margin-bottom: 0;
-    }
-    .share-tag-input-row button { flex-shrink: 0; }
-    /* 分享图片预览 */
-    .share-img-preview {
-      position: relative;
-      display: inline-block;
-      margin: 0 0 10px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--jjs-border);
-    }
-    .share-img-preview img {
-      max-width: 220px;
-      max-height: 150px;
-      display: block;
-      object-fit: cover;
-    }
-    .share-img-preview .share-img-remove {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0, 0, 0, 0.55);
-      color: #fff;
-      font-size: 14px;
-      line-height: 22px;
-      cursor: pointer;
-    }
-    .share-img-preview .share-img-remove:hover { background: var(--jjs-primary); }
-    .my-stories {
-      max-width: 760px;
-      margin: 28px auto 0;
-    }
-    .my-story-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--jjs-border);
-    }
-    .my-story-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
-    .my-story-info .my-story-title { font-weight: 600; font-size: 14px; }
-    .my-story-status {
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 999px;
-      padding: 3px 10px;
-      flex-shrink: 0;
-    }
-    .my-story-status.approved { background: #dcfce7; color: #166534; }
-    .my-story-status.pending { background: #fef3c7; color: #92400e; }
-    .my-story-status.rejected { background: #fee2e2; color: #b91c1c; }
-    .my-story-reason {
-      font-size: 12px;
-      color: #b91c1c;
-      background: #fef2f2;
-      border-radius: 6px;
-      padding: 3px 10px;
-    }
-    .my-story-edit { flex-shrink: 0; }
 
     /* 成长历程时间线 */
     .milestones {
       background: var(--jjs-dark);
       color: #fff;
-      padding: 72px 0 64px;
+      padding: 76px 0 68px;
     }
     .milestones-header {
       text-align: center;
-      margin-bottom: 46px;
+      margin-bottom: 52px;
     }
     .milestones-header .kicker {
       color: var(--jjs-accent);
-      letter-spacing: 3px;
-      font-size: 12px;
+      letter-spacing: 5px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      text-indent: 5px;
     }
     .milestones-header h2 {
-      font-size: 30px;
-      font-weight: 800;
+      font-size: clamp(24px, 2.8vw, 32px);
+      font-weight: 700;
+      letter-spacing: 1px;
     }
     .milestones-grid {
       display: grid;
@@ -537,7 +159,7 @@
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: var(--radius-lg);
-      padding: 26px 22px;
+      padding: 30px 24px;
       text-align: center;
       transition: transform 0.3s ease;
     }
@@ -546,40 +168,44 @@
     }
     .milestone-card .ml-time {
       color: var(--jjs-accent);
-      font-weight: 800;
-      font-size: 22px;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
+      font-weight: 700;
+      font-size: 26px;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      line-height: 1.2;
     }
     .milestone-card .ml-title {
-      font-weight: 700;
-      font-size: 15px;
-      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
     }
     .milestone-card .ml-desc {
-      color: rgba(255,255,255,0.68);
-      font-size: 12.5px;
-      line-height: 1.8;
+      color: rgba(255,255,255,0.66);
+      font-size: 13px;
+      line-height: 1.9;
     }
 
     /* 价值观 */
     .values-section {
-      padding: 72px 0 64px;
+      padding: 76px 0 68px;
     }
     .values-header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 46px;
     }
     .values-header .kicker {
       color: var(--jjs-primary);
-      letter-spacing: 3px;
-      font-size: 12px;
+      letter-spacing: 5px;
+      font-size: 13px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      text-indent: 5px;
     }
     .values-header h2 {
-      font-size: 30px;
-      font-weight: 800;
+      font-size: clamp(24px, 2.8vw, 32px);
+      font-weight: 700;
+      letter-spacing: 1px;
     }
     .values-grid {
       display: grid;
@@ -588,29 +214,30 @@
     }
     .value-card {
       text-align: center;
-      padding: 34px 24px;
+      padding: 40px 28px 36px;
       border-radius: var(--radius-lg);
       background: var(--jjs-bg-light);
       border: 1px solid var(--jjs-border);
     }
     .value-card .v-ic {
-      font-size: 34px;
-      margin-bottom: 14px;
+      font-size: 36px;
+      margin-bottom: 18px;
+      opacity: 0.9;
     }
     .value-card .v-title {
-      font-weight: 800;
-      font-size: 16px;
-      margin-bottom: 8px;
+      font-weight: 700;
+      font-size: 17px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
     }
     .value-card .v-desc {
       color: var(--jjs-gray);
-      font-size: 13px;
-      line-height: 1.8;
+      font-size: 13.5px;
+      line-height: 1.9;
     }
 
     @media (max-width: 900px) {
       .story-grid { grid-template-columns: 1fr; gap: 28px; }
-      .discover-grid { grid-template-columns: 1fr; gap: 20px; }
       .milestones-grid { grid-template-columns: repeat(2, 1fr); }
       .values-grid { grid-template-columns: 1fr; }
     }
@@ -621,12 +248,12 @@
     <top-bar></top-bar>
     <main-nav active="about"></main-nav>
 
-    <!-- Hero：品牌口号 -->
+    <!-- Hero：品牌口号（后台「内容管理」可编辑） -->
     <section class="about-hero">
       <div class="about-hero-inner">
-        <span class="hero-tag">{{ t('about_hero_tag') }}</span>
-        <h1>{{ t('about_hero_title') }}</h1>
-        <p class="sub">{{ t('about_hero_sub') }}</p>
+        <span class="hero-tag">{{ heroTag }}</span>
+        <h1>{{ heroTitle }}</h1>
+        <p class="sub">{{ heroSub }}</p>
       </div>
     </section>
 
@@ -638,7 +265,6 @@
             <div class="kicker">{{ t('our_story_kicker') }}</div>
             <h2>{{ storyTitle }}</h2>
             <p class="story-p" v-for="(para, i) in storyParagraphs" :key="i">{{ para }}</p>
-            <p class="story-p">{{ t('mission_desc') }}</p>
           </div>
           <div class="story-visual">
             <img v-if="storyImage" :src="storyImage" alt="Story">
@@ -649,76 +275,12 @@
       </div>
     </section>
 
-    <!-- 使命 -->
-    <section class="mission-band">
-      <div class="mission-inner">
-        <div class="kicker">{{ t('mission_kicker') }}</div>
-        <h2>{{ t('mission_title') }}</h2>
-        <p class="mission-desc">{{ t('mission_desc') }}</p>
-        <div class="mission-points">
-          <div class="mission-point"><span class="mp-ic"><base-icon name="palette" :size="20"></base-icon></span>{{ t('mission_p1') }}</div>
-          <div class="mission-point"><span class="mp-ic"><base-icon name="globe" :size="20"></base-icon></span>{{ t('mission_p2') }}</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 用户故事社区 -->
-    <section class="discover-section" id="user-stories">
-      <div class="container">
-        <div class="discover-header">
-          <div class="kicker">USER STORIES</div>
-          <h2>用户故事</h2>
-          <p class="discover-desc">听见真实分享，让每一种热爱被看见。</p>
-        </div>
-        <!-- 标签墙筛选 -->
-        <div class="discover-tabs">
-          <button :class="{active: activeTag==='all'}" @click="activeTag='all'">全部</button>
-          <button v-for="t in allTags" :key="t.name" :class="{active: activeTag===t.name}" @click="activeTag=t.name">
-            {{ t.name }}<span v-if="t.count" style="font-size:10px;opacity:.7"> ({{ t.count }})</span>
-          </button>
-        </div>
-        <div class="discover-tab-hint" v-if="allTags.length">按标签筛选故事</div>
-        <div class="discover-grid">
-          <a class="discover-card" v-for="story in filteredStories" :key="story.id" :href="'/story-detail.html?id=' + story.id">
-            <div class="dc-img" v-if="story.image_url && !story.imgError"><img :src="story.image_url" alt="User story" loading="lazy" @error="story.imgError = true"></div>
-            <div class="dc-img dc-img-placeholder" v-else>
-              <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-            </div>
-            <div class="dc-body">
-              <div class="dc-title"><base-icon name="review" :size="18"></base-icon> {{ story.title }}</div>
-              <div class="dc-time" v-if="story.created_at">{{ formatTime(story.created_at) }}</div>
-              <div class="dc-desc">{{ story.content }}</div>
-              <div class="dc-meta">
-                <span class="dc-meta-left">
-                  <span class="dc-author"><span class="dc-avatar">{{ (story.author || 'U').charAt(0).toUpperCase() }}</span> {{ story.author }}</span>
-                  <span class="dc-stats">
-                    <span class="dc-stat" :class="{liked: story.liked}">
-                      <svg viewBox="0 0 24 24" width="14" height="14" :fill="story.liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                      {{ story.like_count || 0 }}
-                    </span>
-                    <span class="dc-stat">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                      {{ story.comment_count || 0 }}
-                    </span>
-                  </span>
-                </span>
-                <span class="dc-tags">
-                  <span v-for="tg in (story.tags || []).slice(0, 3)" :key="tg" class="dc-tag">{{ tg }}</span>
-                </span>
-              </div>
-            </div>
-          </a>
-          <div class="discover-empty" v-if="!filteredStories.length">还没有该标签的用户故事，成为第一个分享的人吧。</div>
-        </div>
-      </div>
-    </section>
-
     <!-- 成长历程 -->
     <section class="milestones">
       <div class="container">
         <div class="milestones-header">
-          <div class="kicker">{{ t('milestones_kicker') }}</div>
-          <h2>{{ t('milestones_title') }}</h2>
+          <div class="kicker">{{ milestonesKicker }}</div>
+          <h2>{{ milestonesTitle }}</h2>
         </div>
         <div class="milestones-grid">
           <div class="milestone-card" v-for="item in milestones" :key="item.time">
@@ -734,8 +296,8 @@
     <section class="values-section">
       <div class="container">
         <div class="values-header">
-          <div class="kicker">{{ t('values_kicker') }}</div>
-          <h2>{{ t('values_title') }}</h2>
+          <div class="kicker">{{ valuesKicker }}</div>
+          <h2>{{ valuesTitle }}</h2>
         </div>
         <div class="values-grid">
           <div class="value-card" v-for="(item, index) in values" :key="item.title">
@@ -754,7 +316,7 @@
   </div>
 
   <script src="/static/js/vue.global.prod.js"></script>
-  <script src="/static/js/pymall.js?v=20"></script>
+  <script src="/static/js/pymall.js?v=24"></script>
   <script>
     (function () {
       var PyMall = window.PyMall;
@@ -765,30 +327,29 @@
         setup() {
           // 品牌故事内容（后台 ERP「内容管理」维护，前端实时展示）
           var state = Vue.reactive({
+            heroTag: t('about_hero_tag'),
+            heroTitle: t('about_hero_title'),
+            heroSub: t('about_hero_sub'),
             storyTitle: t('our_story'),
             storyParagraphs: [t('our_story_p1'), t('our_story_p2')],
             storyImage: '',
+            milestonesKicker: t('milestones_kicker'),
+            milestonesTitle: t('milestones_title'),
+            valuesKicker: t('values_kicker'),
+            valuesTitle: t('values_title'),
             milestones: [],
             values: [],
-            userStories: [],
-            allTags: [],           // 从公开故事聚合的标签墙 [{name, count}]
-            activeTag: 'all',      // 标签墙当前筛选
-          });
-
-          // 按标签筛选后的公开故事
-          var filteredStories = Vue.computed(function () {
-            if (!state.userStories) return [];
-            if (state.activeTag === 'all') return state.userStories;
-            return state.userStories.filter(function (s) {
-              var tags = s.tags || [];
-              return tags.indexOf(state.activeTag) > -1;
-            });
           });
 
           PyMall.api('/api/site-content?page=about', { noLang: true })
             .then(function (d) {
               if (!d) return;
               var lang = PyMall.getLang();
+              // Hero 区（后台可编辑）
+              if (d.hero_tag) state.heroTag = d.hero_tag[lang] || d.hero_tag.zh || state.heroTag;
+              if (d.hero_title) state.heroTitle = d.hero_title[lang] || d.hero_title.zh || state.heroTitle;
+              if (d.hero_subtitle) state.heroSub = d.hero_subtitle[lang] || d.hero_subtitle.zh || state.heroSub;
+              // 品牌故事
               if (d.story_title) state.storyTitle = d.story_title[lang] || d.story_title.zh || state.storyTitle;
               if (d.story_content) {
                 var c = d.story_content[lang] || d.story_content.zh || '';
@@ -799,6 +360,11 @@
                 if (typeof si === 'object' && si) si = si.zh || si.en || '';
                 if (si) state.storyImage = si;
               }
+              // 区块标题（成长历程/价值观，后台可编辑）
+              if (d.milestones_kicker) state.milestonesKicker = d.milestones_kicker[lang] || d.milestones_kicker.zh || state.milestonesKicker;
+              if (d.milestones_title) state.milestonesTitle = d.milestones_title[lang] || d.milestones_title.zh || state.milestonesTitle;
+              if (d.values_kicker) state.valuesKicker = d.values_kicker[lang] || d.values_kicker.zh || state.valuesKicker;
+              if (d.values_title) state.valuesTitle = d.values_title[lang] || d.values_title.zh || state.valuesTitle;
               var lang = PyMall.getLang();
               function localize(item, field) {
                 var value = item && item[field];
@@ -813,46 +379,20 @@
             })
             .catch(function () { /* 保持默认文案 */ });
 
-          // 加载公开故事（兼容旧数组结构与新 {items, tags} 结构）
-          function loadStories() {
-            PyMall.api('/api/user-stories').then(function (data) {
-              if (Array.isArray(data)) {
-                // 旧结构（数组）：兼容处理
-                state.userStories = data;
-                var tagCount = {};
-                data.forEach(function (s) {
-                  (s.tags || []).forEach(function (tg) { tagCount[tg] = (tagCount[tg] || 0) + 1; });
-                });
-                state.allTags = Object.keys(tagCount).map(function (k) { return { name: k, count: tagCount[k] }; });
-              } else {
-                state.userStories = (data && data.items) || [];
-                state.allTags = (data && data.tags) || [];
-              }
-            }).catch(function () {});
-          }
-          loadStories();
-
-          // 用户故事发布时间格式化（ISO → “YYYY-MM-DD”）
-          function formatTime(iso) {
-            if (!iso) return '';
-            var d = new Date(iso);
-            if (isNaN(d.getTime())) return String(iso).replace('T', ' ').slice(0, 10);
-            var p = function (n) { return n < 10 ? '0' + n : '' + n; };
-            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
-          }
-
           return {
             t: t,
+            heroTag: Vue.computed(function () { return state.heroTag; }),
+            heroTitle: Vue.computed(function () { return state.heroTitle; }),
+            heroSub: Vue.computed(function () { return state.heroSub; }),
             storyTitle: Vue.computed(function () { return state.storyTitle; }),
             storyParagraphs: Vue.computed(function () { return state.storyParagraphs; }),
             storyImage: Vue.computed(function () { return state.storyImage; }),
+            milestonesKicker: Vue.computed(function () { return state.milestonesKicker; }),
+            milestonesTitle: Vue.computed(function () { return state.milestonesTitle; }),
+            valuesKicker: Vue.computed(function () { return state.valuesKicker; }),
+            valuesTitle: Vue.computed(function () { return state.valuesTitle; }),
             milestones: Vue.computed(function () { return state.milestones; }),
             values: Vue.computed(function () { return state.values; }),
-            userStories: Vue.computed(function () { return state.userStories; }),
-            filteredStories: filteredStories,
-            allTags: Vue.computed(function () { return state.allTags; }),
-            activeTag: Vue.computed({ get: function () { return state.activeTag; }, set: function (v) { state.activeTag = v; } }),
-            formatTime: formatTime,
           };
         },
       });

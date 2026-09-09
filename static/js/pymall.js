@@ -68,10 +68,26 @@
       confirm_delete: '确认删除该条记录？',
       approved_review: '已通过', review_pending: '审核中',
       after_sales_empty: '暂无售后记录', after_sales_tip: '如有退换货需求，请联系在线客服',
+      // ---- 我的故事（账户中心 tab） ----
+      my_stories: '我的故事', publish_story: '发布新故事',
+      story_title_label: '标题', story_tags_label: '标签（逗号/顿号分隔，最多 6 个）',
+      story_content_label: '内容', story_image_label: '配图（可选）',
+      story_title_ph: '分享标题', story_content_ph: '写下你的 YOYOLE 瑜伽、户外或生活故事',
+      story_tags_ph: '例如：晨练, 冥想, 露营',
+      save_edit: '保存修改', submit_story: '提交分享', cancel_edit: '取消编辑',
+      story_editing_tip: '正在编辑，保存后需重新审核',
+      story_empty_list: '还没有投稿，点击「发布新故事」分享你的第一个故事吧。',
+      status_approved: '已发布', status_rejected: '已驳回', status_pending: '待审核',
+      reject_reason_label: '驳回理由：',
+      story_saved_edit: '已保存，修改后需重新审核', story_submitted: '已提交，等待审核后展示',
+      image_uploaded: '图片已上传', story_fill_required: '请填写标题和分享内容',
+      story_edit_tip: '编辑故事', story_upload_tip: '故事图片上传',
+      story_upload_fail: '图片上传失败', story_submit_fail: '提交失败',
       // ---- 登录引导 ----
       orders_login_tip: '登录后查看您的订单', cart_login_tip: '登录后查看和管理您的购物车',
       // ---- About Us ----
       about: '关于我们', brand_story: 'YOYOLE 故事', about_hero_tag: 'ABOUT YOYOLE',
+      stories: '用户故事',
       about_hero_title: 'YOYOLE，让身体回到自然',
       about_hero_sub: '从瑜伽练习到山野远行，用认真设计的装备支持每一次自在出发。',
       our_story: '我们的故事', our_story_kicker: 'OUR STORY',
@@ -85,6 +101,23 @@
       discover_1_title: '瑜伽练习', discover_1_desc: '从晨间呼吸到稳定体式，找到自己的节奏',
       discover_2_title: '户外出发', discover_2_desc: '轻装走进山野，把风景带回生活',
       discover_3_title: '用户故事', discover_3_desc: '分享真实体验，与同样热爱生活的人相遇',
+      // ---- 用户故事页 ----
+      stories_hint: '点击故事卡片查看详情、点赞与评论',
+      stories_all: '全部',
+      stories_filter_hint: '按标签筛选故事',
+      stories_empty: '还没有该标签的用户故事，成为第一个分享的人吧。',
+      // ---- 用户故事详情页 ----
+      story_detail_title: '用户故事详情',
+      story_not_found: '用户故事不存在或未发布',
+      back_to_stories: '返回用户故事',
+      liked: '已赞', like: '点赞',
+      comments_count: '共 {0} 条评论',
+      comments: '评论',
+      no_comments: '还没有评论，来抢沙发～',
+      comment_placeholder: '说点什么…（登录后发表）',
+      comment_submit: '发表',
+      comment_posted: '评论已发表',
+      comment_failed: '评论失败',
       milestones_title: '成长历程', milestones_kicker: 'MILESTONES',
       m1_time: '2020', m1_title: '品牌创立', m1_desc: 'YOYOLE 从瑜伽与户外爱好者的真实需求出发',
       m2_time: '2022', m2_title: '走进山野', m2_desc: '推出轻量、耐用的户外出行系列',
@@ -186,10 +219,26 @@
       confirm_delete: 'Confirm delete this record?',
       approved_review: 'Approved', review_pending: 'Pending',
       after_sales_empty: 'No after-sales records', after_sales_tip: 'For returns or exchanges, please contact support',
+      // ---- My stories (account tab) ----
+      my_stories: 'My Stories', publish_story: 'Publish a Story',
+      story_title_label: 'Title', story_tags_label: 'Tags (comma separated, max 6)',
+      story_content_label: 'Content', story_image_label: 'Image (optional)',
+      story_title_ph: 'Story title', story_content_ph: 'Share your YOYOLE yoga, outdoor or life story',
+      story_tags_ph: 'e.g. morning practice, camp',
+      save_edit: 'Save Changes', submit_story: 'Submit Story', cancel_edit: 'Cancel Edit',
+      story_editing_tip: 'Editing — story will need re-review after saving',
+      story_empty_list: 'No stories yet. Click “Publish a Story” to share your first one.',
+      status_approved: 'Published', status_rejected: 'Rejected', status_pending: 'Pending',
+      reject_reason_label: 'Reason: ',
+      story_saved_edit: 'Saved — story will need re-review', story_submitted: 'Submitted — pending review before publishing',
+      image_uploaded: 'Image uploaded', story_fill_required: 'Please fill in title and content',
+      story_edit_tip: 'Edit story', story_upload_tip: 'Story image upload',
+      story_upload_fail: 'Image upload failed', story_submit_fail: 'Submit failed',
       // ---- 登录引导 ----
       orders_login_tip: 'Log in to view your orders', cart_login_tip: 'Log in to view and manage your cart',
       // ---- About Us ----
       about: 'About Us', brand_story: 'Our YOYOLE Story', about_hero_tag: 'ABOUT YOYOLE',
+      stories: 'Stories',
       about_hero_title: 'YOYOLE brings the body back to nature',
       about_hero_sub: 'Thoughtful gear for yoga practice, outdoor adventures, and a life in motion.',
       our_story: 'Our Story', our_story_kicker: 'OUR STORY',
@@ -198,11 +247,28 @@
       mission_title: 'Our Mission', mission_kicker: 'MISSION',
       mission_desc: 'Help every user discover unique and fun products, and support artists and designers.',
       mission_p1: 'Make great design visible', mission_p2: 'Bring great works to the world',
-      discover_title: 'Discover PyMall', discover_kicker: 'DISCOVER',
-      discover_desc: 'From online store to community, we build a complete trend experience ecosystem.',
-      discover_1_title: 'PyMall Store', discover_1_desc: 'Curated designer toys worldwide, authentic & global shipping',
-      discover_2_title: 'Creator Program', discover_2_desc: 'Support independent artists and designers',
-      discover_3_title: 'Community', discover_3_desc: 'Share collections, meet friends, play with attitude',
+      discover_title: 'User Stories', discover_kicker: 'USER STORIES',
+      discover_desc: 'Share your practice, your journeys, and moments with nature.',
+      discover_1_title: 'Yoga Practice', discover_1_desc: 'From morning breath to steady poses, find your rhythm',
+      discover_2_title: 'Outdoor Escapes', discover_2_desc: 'Travel light into the wild, bring scenery back to life',
+      discover_3_title: 'User Stories', discover_3_desc: 'Share real experiences and meet like-minded people',
+      // ---- User stories page ----
+      stories_hint: 'Click a story card to view details, like and comment',
+      stories_all: 'All',
+      stories_filter_hint: 'Filter stories by tag',
+      stories_empty: 'No stories with this tag yet. Be the first to share one.',
+      // ---- Story detail page ----
+      story_detail_title: 'Story Detail',
+      story_not_found: 'Story not found or not published',
+      back_to_stories: 'Back to Stories',
+      liked: 'Liked', like: 'Like',
+      comments_count: '{0} comments',
+      comments: 'Comments',
+      no_comments: 'No comments yet. Be the first!',
+      comment_placeholder: 'Say something… (log in to comment)',
+      comment_submit: 'Post',
+      comment_posted: 'Comment posted',
+      comment_failed: 'Failed to post comment',
       milestones_title: 'Milestones', milestones_kicker: 'MILESTONES',
       m1_time: '2020', m1_title: 'Founded', m1_desc: 'PyMall launched with 50 designers on board',
       m2_time: '2022', m2_title: 'Global Expansion', m2_desc: 'Serving customers in 30+ countries',
@@ -353,8 +419,12 @@
   }
 
   function switchLang(lang) {
+    if (lang === store.lang) return;   // 语言未变则无需刷新
     setLang(lang);
     store.lang = lang;
+    // 刷新页面：让所有页面数据（标题、about 页 state、用户故事等）按新语言完整重载，
+    // 避免只更新 store.lang 导致 setup 阶段已初始化的文案残留旧语言
+    setTimeout(function () { location.reload(); }, 60);
   }
 
   function localName(i18nObj, fallback) {
@@ -560,6 +630,7 @@
           <div class="nav-links">
             <a href="/" class="link" :class="{active: active==='home'}">{{ t('home') }}</a>
             <a href="/products.html" class="link" :class="{active: active==='products'}">{{ t('products') }}</a>
+            <a href="/stories.html" class="link" :class="{active: active==='stories'}">{{ t('stories') }}</a>
             <a href="/about.html" class="link" :class="{active: active==='about'}">{{ t('about') }}</a>
           </div>
           <div class="nav-actions">
